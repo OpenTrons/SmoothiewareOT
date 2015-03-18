@@ -18,6 +18,7 @@ using std::string;
 class Gcode;
 class BaseSolution;
 class StepperMotor;
+class Feedback;
 
 class Robot : public Module {
     public:
@@ -30,7 +31,7 @@ class Robot : public Module {
         void on_halt(void *arg);
 
         void reset_axis_position(float position, int axis);
-        void reset_axis_position(float x, float y, float z);
+        void reset_axis_position(float x, float y, float z, float a, float b, float c);
         void reset_position_from_current_actuator_position();
         void get_axis_position(float position[]);
         float to_millimeters(float value);
@@ -46,12 +47,14 @@ class Robot : public Module {
         std::vector<StepperMotor*> actuators;
 
         // set by a leveling strategy to transform the target of a move according to the current plan
-        std::function<void(float[3])> compensationTransform;
+        std::function<void(float[6])> compensationTransform;
+
+        float	default_seek_rates[4];
 
     private:
         void distance_in_gcode_is_known(Gcode* gcode);
-        void append_milestone( float target[], float rate_mm_s);
-        void append_line( Gcode* gcode, float target[], float rate_mm_s);
+        void append_milestone( float target[], float rate_mm_s, float a_rate_mm_s, float b_rate_mm_s, float c_rate_mm_s);
+        void append_line( Gcode* gcode, float target[], float rate_mm_s, float a_rate_mm_s, float b_rate_mm_s, float c_rate_mm_s);
         //void append_arc(float theta_start, float angular_travel, float radius, float depth, float rate);
         void append_arc( Gcode* gcode, float target[], float offset[], float radius, bool is_clockwise );
 
@@ -63,12 +66,18 @@ class Robot : public Module {
         void clearToolOffset();
         void check_max_actuator_speeds();
 
-        float last_milestone[3];                             // Last position, in millimeters
-        float transformed_last_milestone[3];                 // Last transformed position
+        float last_milestone[6];                             // Last position, in millimeters
+        float transformed_last_milestone[6];                 // Last transformed position
         int8_t motion_mode;                                  // Motion mode for the current received Gcode
         uint8_t plane_axis_0, plane_axis_1, plane_axis_2;    // Current plane ( XY, XZ, YZ )
         float seek_rate;                                     // Current rate for seeking moves ( mm/s )
+
+        float a_seek_rate, b_seek_rate, c_seek_rate;
+
         float feed_rate;                                     // Current rate for feeding moves ( mm/s )
+
+        float a_feed_rate, b_feed_rate, c_feed_rate;
+
         float mm_per_line_segment;                           // Setting : Used to split lines into segments
         float mm_per_arc_segment;                            // Setting : Used to split arcs into segmentrs
         float delta_segments_per_second;                     // Setting : Used to split lines into segments for delta based on speed
@@ -92,6 +101,10 @@ class Robot : public Module {
         StepperMotor* beta_stepper_motor;
         StepperMotor* gamma_stepper_motor;
 
+        StepperMotor* chi_stepper_motor;
+		StepperMotor* psi_stepper_motor;
+		StepperMotor* omega_stepper_motor;
+
         struct {
             bool halted:1;
             bool inch_mode:1;                                     // true for inch mode, false for millimeter mode ( default )
@@ -106,7 +119,7 @@ inline float Robot::from_millimeters( float value){
     return this->inch_mode ? value/25.4 : value;
 }
 inline void Robot::get_axis_position(float position[]){
-    memcpy(position, this->last_milestone, sizeof(float)*3 );
+    memcpy(position, this->last_milestone, sizeof(float)*6 );
 }
 
 #endif

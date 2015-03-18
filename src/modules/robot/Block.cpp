@@ -43,19 +43,84 @@ void Block::clear()
 
     steps_event_count   = 0;
     nominal_rate        = 0;
+
+    a_nominal_rate        = 0;
+    b_nominal_rate        = 0;
+    c_nominal_rate        = 0;
+
     nominal_speed       = 0.0F;
+
+    a_nominal_speed       = 0.0F;
+    b_nominal_speed       = 0.0F;
+    c_nominal_speed       = 0.0F;
+
     millimeters         = 0.0F;
+
+    a_millimeters         = 0.0F;
+    b_millimeters         = 0.0F;
+    c_millimeters         = 0.0F;
+
     entry_speed         = 0.0F;
+
+    a_entry_speed         = 0.0F;
+    b_entry_speed         = 0.0F;
+    c_entry_speed         = 0.0F;
+
     exit_speed          = 0.0F;
+
+    a_exit_speed          = 0.0F;
+    b_exit_speed          = 0.0F;
+    c_exit_speed          = 0.0F;
+
     rate_delta          = 0.0F;
+
+    a_rate_delta          = 0.0F;
+    b_rate_delta          = 0.0F;
+    c_rate_delta          = 0.0F;
+
     initial_rate        = -1;
+
+    a_initial_rate        = -1;
+    b_initial_rate        = -1;
+    c_initial_rate        = -1;
+
     final_rate          = -1;
+
+    a_final_rate          = -1;
+    b_final_rate          = -1;
+    c_final_rate          = -1;
+
     accelerate_until    = 0;
+
+    a_accelerate_until    = 0;
+    b_accelerate_until    = 0;
+    c_accelerate_until    = 0;
+
     decelerate_after    = 0;
+
+    a_decelerate_after    = 0;
+    b_decelerate_after    = 0;
+    c_decelerate_after    = 0;
+
     direction_bits      = 0;
     recalculate_flag    = false;
+
+    a_recalculate_flag    = false;
+    b_recalculate_flag    = false;
+    c_recalculate_flag    = false;
+
     nominal_length_flag = false;
+
+    a_nominal_length_flag = false;
+    b_nominal_length_flag = false;
+    c_nominal_length_flag = false;
+
     max_entry_speed     = 0.0F;
+
+    a_max_entry_speed     = 0.0F;
+    b_max_entry_speed     = 0.0F;
+    c_max_entry_speed     = 0.0F;
+
     is_ready            = false;
     times_taken         = 0;
 }
@@ -128,6 +193,106 @@ void Block::calculate_trapezoid( float entryspeed, float exitspeed )
     this->exit_speed = exitspeed;
 }
 
+void Block::a_calculate_trapezoid( float entryspeed, float exitspeed )
+{
+    // if block is currently executing, don't touch anything!
+    if (times_taken)
+        return;
+
+    // The planner passes us factors, we need to transform them in rates
+    this->a_initial_rate = ceil(this->a_nominal_rate * entryspeed / this->a_nominal_speed);   // (step/s)
+    this->a_final_rate   = ceil(this->a_nominal_rate * exitspeed  / this->a_nominal_speed);   // (step/s)
+
+    // How many steps to accelerate and decelerate
+    float acceleration_per_second = this->a_rate_delta * THEKERNEL->stepper->get_a_acceleration_ticks_per_second(); // ( step/s^2)
+    int accelerate_steps = ceil( this->estimate_acceleration_distance( this->a_initial_rate, this->a_nominal_rate, acceleration_per_second ) );
+    int decelerate_steps = floor( this->estimate_acceleration_distance( this->a_nominal_rate, this->a_final_rate,  -acceleration_per_second ) );
+
+    // Calculate the size of Plateau of Nominal Rate ( during which we don't accelerate nor decelerate, but just cruise )
+    int plateau_steps = this->steps[A_AXIS] - accelerate_steps - decelerate_steps;
+
+    // Is the Plateau of Nominal Rate smaller than nothing? That means no cruising, and we will
+    // have to use intersection_distance() to calculate when to abort acceleration and start braking
+    // in order to reach the final_rate exactly at the end of this block.
+    if (plateau_steps < 0) {
+        accelerate_steps = ceil(this->intersection_distance(this->a_initial_rate, this->a_final_rate, acceleration_per_second, this->steps[A_AXIS]));
+        accelerate_steps = max( accelerate_steps, 0 ); // Check limits due to numerical round-off
+        accelerate_steps = min( accelerate_steps, int(this->steps[A_AXIS]) );
+        plateau_steps = 0;
+    }
+    this->a_accelerate_until = accelerate_steps;
+    this->a_decelerate_after = accelerate_steps + plateau_steps;
+
+    this->a_exit_speed = exitspeed;
+}
+
+void Block::b_calculate_trapezoid( float entryspeed, float exitspeed )
+{
+    // if block is currently executing, don't touch anything!
+    if (times_taken)
+        return;
+
+    // The planner passes us factors, we need to transform them in rates
+    this->b_initial_rate = ceil(this->b_nominal_rate * entryspeed / this->b_nominal_speed);   // (step/s)
+    this->b_final_rate   = ceil(this->b_nominal_rate * exitspeed  / this->b_nominal_speed);   // (step/s)
+
+    // How many steps to accelerate and decelerate
+    float acceleration_per_second = this->b_rate_delta * THEKERNEL->stepper->get_a_acceleration_ticks_per_second(); // ( step/s^2)
+    int accelerate_steps = ceil( this->estimate_acceleration_distance( this->b_initial_rate, this->b_nominal_rate, acceleration_per_second ) );
+    int decelerate_steps = floor( this->estimate_acceleration_distance( this->b_nominal_rate, this->b_final_rate,  -acceleration_per_second ) );
+
+    // Calculate the size of Plateau of Nominal Rate ( during which we don't accelerate nor decelerate, but just cruise )
+    int plateau_steps = this->steps[B_AXIS] - accelerate_steps - decelerate_steps;
+
+    // Is the Plateau of Nominal Rate smaller than nothing? That means no cruising, and we will
+    // have to use intersection_distance() to calculate when to abort acceleration and start braking
+    // in order to reach the final_rate exactly at the end of this block.
+    if (plateau_steps < 0) {
+        accelerate_steps = ceil(this->intersection_distance(this->b_initial_rate, this->b_final_rate, acceleration_per_second, this->steps[B_AXIS]));
+        accelerate_steps = max( accelerate_steps, 0 ); // Check limits due to numerical round-off
+        accelerate_steps = min( accelerate_steps, int(this->steps[B_AXIS]) );
+        plateau_steps = 0;
+    }
+    this->b_accelerate_until = accelerate_steps;
+    this->b_decelerate_after = accelerate_steps + plateau_steps;
+
+    this->b_exit_speed = exitspeed;
+}
+
+void Block::c_calculate_trapezoid( float entryspeed, float exitspeed )
+{
+    // if block is currently executing, don't touch anything!
+    if (times_taken)
+        return;
+
+    // The planner passes us factors, we need to transform them in rates
+    this->c_initial_rate = ceil(this->c_nominal_rate * entryspeed / this->c_nominal_speed);   // (step/s)
+    this->c_final_rate   = ceil(this->c_nominal_rate * exitspeed  / this->c_nominal_speed);   // (step/s)
+
+    // How many steps to accelerate and decelerate
+    float acceleration_per_second = this->c_rate_delta * THEKERNEL->stepper->get_acceleration_ticks_per_second(); // ( step/s^2)
+    int accelerate_steps = ceil( this->estimate_acceleration_distance( this->c_initial_rate, this->c_nominal_rate, acceleration_per_second ) );
+    int decelerate_steps = floor( this->estimate_acceleration_distance( this->c_nominal_rate, this->c_final_rate,  -acceleration_per_second ) );
+
+    // Calculate the size of Plateau of Nominal Rate ( during which we don't accelerate nor decelerate, but just cruise )
+    int plateau_steps = this->steps[C_AXIS] - accelerate_steps - decelerate_steps;
+
+    // Is the Plateau of Nominal Rate smaller than nothing? That means no cruising, and we will
+    // have to use intersection_distance() to calculate when to abort acceleration and start braking
+    // in order to reach the final_rate exactly at the end of this block.
+    if (plateau_steps < 0) {
+        accelerate_steps = ceil(this->intersection_distance(this->c_initial_rate, this->c_final_rate, acceleration_per_second, this->steps[C_AXIS]));
+        accelerate_steps = max( accelerate_steps, 0 ); // Check limits due to numerical round-off
+        accelerate_steps = min( accelerate_steps, int(this->steps[C_AXIS]) );
+        plateau_steps = 0;
+    }
+    this->c_accelerate_until = accelerate_steps;
+    this->c_decelerate_after = accelerate_steps + plateau_steps;
+
+    this->c_exit_speed = exitspeed;
+}
+
+
 // Calculates the distance (not time) it takes to accelerate from initial_rate to target_rate using the
 // given acceleration:
 float Block::estimate_acceleration_distance(float initialrate, float targetrate, float acceleration)
@@ -187,6 +352,80 @@ float Block::reverse_pass(float exit_speed)
     return this->entry_speed;
 }
 
+// Called by Planner::recalculate() when scanning the plan from last to first entry.
+float Block::a_reverse_pass(float exit_speed)
+{
+    // If entry speed is already at the maximum entry speed, no need to recheck. Block is cruising.
+    // If not, block in state of acceleration or deceleration. Reset entry speed to maximum and
+    // check for maximum allowable speed reductions to ensure maximum possible planned speed.
+    if (this->a_entry_speed != this->a_max_entry_speed)
+    {
+        // If nominal length true, max junction speed is guaranteed to be reached. Only compute
+        // for max allowable speed if block is decelerating and nominal length is false.
+        if ((!this->a_nominal_length_flag) && (this->a_max_entry_speed > exit_speed))
+        {
+            float max_entry_speed = max_allowable_speed(-THEKERNEL->planner->get_a_acceleration(), exit_speed, this->a_millimeters);
+
+            this->a_entry_speed = min(max_entry_speed, this->a_max_entry_speed);
+
+            return this->a_entry_speed;
+        }
+        else
+            this->a_entry_speed = this->a_max_entry_speed;
+    }
+
+    return this->a_entry_speed;
+}
+
+// Called by Planner::recalculate() when scanning the plan from last to first entry.
+float Block::b_reverse_pass(float exit_speed)
+{
+    // If entry speed is already at the maximum entry speed, no need to recheck. Block is cruising.
+    // If not, block in state of acceleration or deceleration. Reset entry speed to maximum and
+    // check for maximum allowable speed reductions to ensure maximum possible planned speed.
+    if (this->b_entry_speed != this->b_max_entry_speed)
+    {
+        // If nominal length true, max junction speed is guaranteed to be reached. Only compute
+        // for max allowable speed if block is decelerating and nominal length is false.
+        if ((!this->b_nominal_length_flag) && (this->b_max_entry_speed > exit_speed))
+        {
+            float max_entry_speed = max_allowable_speed(-THEKERNEL->planner->get_b_acceleration(), exit_speed, this->b_millimeters);
+
+            this->b_entry_speed = min(max_entry_speed, this->b_max_entry_speed);
+
+            return this->b_entry_speed;
+        }
+        else
+            this->b_entry_speed = this->b_max_entry_speed;
+    }
+
+    return this->b_entry_speed;
+}
+
+// Called by Planner::recalculate() when scanning the plan from last to first entry.
+float Block::c_reverse_pass(float exit_speed)
+{
+    // If entry speed is already at the maximum entry speed, no need to recheck. Block is cruising.
+    // If not, block in state of acceleration or deceleration. Reset entry speed to maximum and
+    // check for maximum allowable speed reductions to ensure maximum possible planned speed.
+    if (this->c_entry_speed != this->c_max_entry_speed)
+    {
+        // If nominal length true, max junction speed is guaranteed to be reached. Only compute
+        // for max allowable speed if block is decelerating and nominal length is false.
+        if ((!this->c_nominal_length_flag) && (this->c_max_entry_speed > exit_speed))
+        {
+            float max_entry_speed = max_allowable_speed(-THEKERNEL->planner->get_c_acceleration(), exit_speed, this->c_millimeters);
+
+            this->c_entry_speed = min(max_entry_speed, this->c_max_entry_speed);
+
+            return this->c_entry_speed;
+        }
+        else
+            this->c_entry_speed = this->c_max_entry_speed;
+    }
+
+    return this->c_entry_speed;
+}
 
 // Called by Planner::recalculate() when scanning the plan from first to last entry.
 // returns maximum exit speed of this block
@@ -217,6 +456,94 @@ float Block::forward_pass(float prev_max_exit_speed)
     return max_exit_speed();
 }
 
+// Called by Planner::recalculate() when scanning the plan from first to last entry.
+// returns maximum exit speed of this block
+float Block::a_forward_pass(float prev_max_exit_speed)
+{
+    // If the previous block is an acceleration block, but it is not long enough to complete the
+    // full speed change within the block, we need to adjust the entry speed accordingly. Entry
+    // speeds have already been reset, maximized, and reverse planned by reverse planner.
+    // If nominal length is true, max junction speed is guaranteed to be reached. No need to recheck.
+
+    // TODO: find out if both of these checks are necessary
+    if (prev_max_exit_speed > a_nominal_speed)
+        prev_max_exit_speed = a_nominal_speed;
+    if (prev_max_exit_speed > a_max_entry_speed)
+        prev_max_exit_speed = a_max_entry_speed;
+
+    if (prev_max_exit_speed <= a_entry_speed)
+    {
+        // accel limited
+        a_entry_speed = prev_max_exit_speed;
+        // since we're now acceleration or cruise limited
+        // we don't need to recalculate our entry speed anymore
+        a_recalculate_flag = false;
+    }
+    // else
+    // // decel limited, do nothing
+
+    return max_exit_speed();
+}
+
+// Called by Planner::recalculate() when scanning the plan from first to last entry.
+// returns maximum exit speed of this block
+float Block::b_forward_pass(float prev_max_exit_speed)
+{
+    // If the previous block is an acceleration block, but it is not long enough to complete the
+    // full speed change within the block, we need to adjust the entry speed accordingly. Entry
+    // speeds have already been reset, maximized, and reverse planned by reverse planner.
+    // If nominal length is true, max junction speed is guaranteed to be reached. No need to recheck.
+
+    // TODO: find out if both of these checks are necessary
+    if (prev_max_exit_speed > b_nominal_speed)
+        prev_max_exit_speed = b_nominal_speed;
+    if (prev_max_exit_speed > b_max_entry_speed)
+        prev_max_exit_speed = b_max_entry_speed;
+
+    if (prev_max_exit_speed <= b_entry_speed)
+    {
+        // accel limited
+        b_entry_speed = prev_max_exit_speed;
+        // since we're now acceleration or cruise limited
+        // we don't need to recalculate our entry speed anymore
+        b_recalculate_flag = false;
+    }
+    // else
+    // // decel limited, do nothing
+
+    return max_exit_speed();
+}
+
+// Called by Planner::recalculate() when scanning the plan from first to last entry.
+// returns maximum exit speed of this block
+float Block::c_forward_pass(float prev_max_exit_speed)
+{
+    // If the previous block is an acceleration block, but it is not long enough to complete the
+    // full speed change within the block, we need to adjust the entry speed accordingly. Entry
+    // speeds have already been reset, maximized, and reverse planned by reverse planner.
+    // If nominal length is true, max junction speed is guaranteed to be reached. No need to recheck.
+
+    // TODO: find out if both of these checks are necessary
+    if (prev_max_exit_speed > c_nominal_speed)
+        prev_max_exit_speed = c_nominal_speed;
+    if (prev_max_exit_speed > c_max_entry_speed)
+        prev_max_exit_speed = c_max_entry_speed;
+
+    if (prev_max_exit_speed <= c_entry_speed)
+    {
+        // accel limited
+        c_entry_speed = prev_max_exit_speed;
+        // since we're now acceleration or cruise limited
+        // we don't need to recalculate our entry speed anymore
+        c_recalculate_flag = false;
+    }
+    // else
+    // // decel limited, do nothing
+
+    return max_exit_speed();
+}
+
+
 float Block::max_exit_speed()
 {
     // if block is currently executing, return cached exit speed from calculate_trapezoid
@@ -236,6 +563,64 @@ float Block::max_exit_speed()
     return min(max, nominal_speed);
 }
 
+float Block::a_max_exit_speed()
+{
+    // if block is currently executing, return cached exit speed from calculate_trapezoid
+    // this ensures that a block following a currently executing block will have correct entry speed
+    if (times_taken)
+        return a_exit_speed;
+
+    // if nominal_length_flag is asserted
+    // we are guaranteed to reach nominal speed regardless of entry speed
+    // thus, max exit will always be nominal
+    if (a_nominal_length_flag)
+        return a_nominal_speed;
+
+    // otherwise, we have to work out max exit speed based on entry and acceleration
+    float max = max_allowable_speed(-THEKERNEL->planner->get_a_acceleration(), this->a_entry_speed, this->a_millimeters);
+
+    return min(max, a_nominal_speed);
+}
+
+float Block::b_max_exit_speed()
+{
+    // if block is currently executing, return cached exit speed from calculate_trapezoid
+    // this ensures that a block following a currently executing block will have correct entry speed
+    if (times_taken)
+        return b_exit_speed;
+
+    // if nominal_length_flag is asserted
+    // we are guaranteed to reach nominal speed regardless of entry speed
+    // thus, max exit will always be nominal
+    if (b_nominal_length_flag)
+        return b_nominal_speed;
+
+    // otherwise, we have to work out max exit speed based on entry and acceleration
+    float max = max_allowable_speed(-THEKERNEL->planner->get_b_acceleration(), this->b_entry_speed, this->b_millimeters);
+
+    return min(max, b_nominal_speed);
+}
+
+float Block::c_max_exit_speed()
+{
+    // if block is currently executing, return cached exit speed from calculate_trapezoid
+    // this ensures that a block following a currently executing block will have correct entry speed
+    if (times_taken)
+        return c_exit_speed;
+
+    // if nominal_length_flag is asserted
+    // we are guaranteed to reach nominal speed regardless of entry speed
+    // thus, max exit will always be nominal
+    if (c_nominal_length_flag)
+        return c_nominal_speed;
+
+    // otherwise, we have to work out max exit speed based on entry and acceleration
+    float max = max_allowable_speed(-THEKERNEL->planner->get_c_acceleration(), this->c_entry_speed, this->c_millimeters);
+
+    return min(max, c_nominal_speed);
+}
+
+
 // Gcodes are attached to their respective blocks so that on_gcode_execute can be called with it
 void Block::append_gcode(Gcode* gcode)
 {
@@ -247,6 +632,10 @@ void Block::append_gcode(Gcode* gcode)
 void Block::begin()
 {
     recalculate_flag = false;
+
+    a_recalculate_flag = false;
+    b_recalculate_flag = false;
+    c_recalculate_flag = false;
 
     if (!is_ready)
         __debugbreak();

@@ -21,6 +21,7 @@ using std::string;
 #include "Config.h"
 #include "checksumm.h"
 #include "ConfigValue.h"
+#include "modules/robot/Feedback.h"
 
 #define return_error_on_unhandled_gcode_checksum    CHECKSUM("return_error_on_unhandled_gcode")
 
@@ -220,9 +221,12 @@ try_again:
                     else if(!gcode->txt_after_ok.empty()) {
                         new_message.stream->printf("ok %s\r\n", gcode->txt_after_ok.c_str());
                         gcode->txt_after_ok.clear();
-                    } else
+                    } else {
                         new_message.stream->printf("ok\r\n");
-
+                        if(THEKERNEL->feedback->machine_state==4) {
+                        	THEKERNEL->feedback->machine_state=0;
+                        }
+                    }
                     delete gcode;
 
                 } else {

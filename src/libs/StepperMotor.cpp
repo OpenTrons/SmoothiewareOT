@@ -9,6 +9,9 @@
 #include "Kernel.h"
 #include "MRI_Hooks.h"
 #include "StepTicker.h"
+#include "libs/SlowTicker.h"
+#include "libs/StreamOutput.h"
+#include "StreamOutputPool.h"
 
 #include <math.h>
 
@@ -40,12 +43,20 @@ void StepperMotor::init()
     this->signal_step = false;
     this->step_signal_hook = new Hook();
 
+    this->id_pos.f_id = 0;
+    //this->feedback_hook = new Hook();
+    this->send_feedback = false;
+    this->feedback_step_time = false;
+    this->feedback_attached = false;
+
     steps_per_mm         = 1.0F;
     max_rate             = 50.0F;
 
     current_position_steps= 0;
     last_milestone_steps = 0;
     last_milestone_mm    = 0.0F;
+
+
 }
 
 
@@ -71,8 +82,16 @@ void StepperMotor::step()
     // keep track of actuators actual position in steps
     this->current_position_steps += (this->direction ? -1 : 1);
 
+    if(this->send_feedback && this->feedback_step_time) {
+    	this->feedback_step_time = false;
+    	this->id_pos.f_current_position_steps = this->current_position_steps;
+    	//if(id_pos.f_current_position_steps!=-1)//-2147483647)
+    	this->feedback_hook->call((uint32_t)&id_pos);
+	}
+
     // Is this move finished ?
     if( this->stepped == this->steps_to_move ) {
+    	this->last_step = this->current_position_steps;
         // Mark it as finished, then StepTicker will call signal_mode_finished()
         // This is so we don't call that before all the steps have been generated for this tick()
         this->is_move_finished = true;
@@ -87,6 +106,11 @@ void StepperMotor::signal_move_finished()
     // work is done ! 8t
     this->moving = false;
     this->steps_to_move = 0;
+
+    this->id_pos.f_current_position_steps = this->last_step;
+    if(this->send_feedback){
+		this->feedback_hook->call((uint32_t)&id_pos);
+	}
 
     // signal it to whatever cares 41t 411t
     this->end_hook->call();
@@ -194,4 +218,29 @@ int  StepperMotor::steps_to_target(float target)
 {
     int target_steps = lround(target * steps_per_mm);
     return target_steps - last_milestone_steps;
+}
+
+void StepperMotor::feedback_step_switch(bool is_on)
+{
+	//THEKERNEL->streams->printf("f_s_s called\r\n");
+	if(is_on) {
+		this->send_feedback = true;
+	} else {
+		this->send_feedback = false;
+		this->feedback_step_time = false;
+		//this->id_pos.f_current_position_steps = -1;//-2147483647;
+	}
+
+	if(this->feedback_attached==false && this->send_feedback) {
+		this->feedback_attached = true;
+		THEKERNEL->slow_ticker->attach(3, this, &StepperMotor::feedback_step_tick );
+	}
+}
+
+uint32_t StepperMotor::feedback_step_tick( uint32_t dummy )
+{
+	if(this->send_feedback) {
+		this->feedback_step_time = true;
+	}
+	return 0;
 }

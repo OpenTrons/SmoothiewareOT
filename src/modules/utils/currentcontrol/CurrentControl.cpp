@@ -63,11 +63,11 @@ void CurrentControl::on_module_loaded()
     digipot->set_factor( THEKERNEL->config->value(digipot_factor )->by_default(113.33f)->as_number());
 
     // Get configuration
-    this->digipot->set_current(0, THEKERNEL->config->value(alpha_current_checksum  )->by_default(0.8f)->as_number());
-    this->digipot->set_current(1, THEKERNEL->config->value(beta_current_checksum   )->by_default(0.8f)->as_number());
-    this->digipot->set_current(2, THEKERNEL->config->value(gamma_current_checksum  )->by_default(0.8f)->as_number());
-    this->digipot->set_current(3, THEKERNEL->config->value(delta_current_checksum  )->by_default(0.8f)->as_number());
-    this->digipot->set_current(4, THEKERNEL->config->value(epsilon_current_checksum)->by_default(-1)->as_number());
+    this->digipot->set_current(0, THEKERNEL->config->value(alpha_current_checksum  )->by_default(0.25f)->as_number());
+    this->digipot->set_current(1, THEKERNEL->config->value(beta_current_checksum   )->by_default(0.25f)->as_number());
+    this->digipot->set_current(2, THEKERNEL->config->value(gamma_current_checksum  )->by_default(0.60f)->as_number());
+    this->digipot->set_current(3, THEKERNEL->config->value(delta_current_checksum  )->by_default(0.18f)->as_number());
+    this->digipot->set_current(4, THEKERNEL->config->value(epsilon_current_checksum)->by_default(0.18f)->as_number());
     this->digipot->set_current(5, THEKERNEL->config->value(zeta_current_checksum   )->by_default(-1)->as_number());
     this->digipot->set_current(6, THEKERNEL->config->value(eta_current_checksum    )->by_default(-1)->as_number());
     this->digipot->set_current(7, THEKERNEL->config->value(theta_current_checksum  )->by_default(-1)->as_number());

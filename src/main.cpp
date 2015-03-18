@@ -124,7 +124,7 @@ void init() {
     kernel->add_module( new CurrentControl() );
     kernel->add_module( new PauseButton() );
     kernel->add_module( new PlayLed() );
-    kernel->add_module( new Endstops() );
+    kernel->add_module( kernel->endstops = new Endstops() );
     kernel->add_module( new Player() );
 
 

@@ -26,6 +26,8 @@
 #include "modules/robot/Conveyor.h"
 #include "modules/robot/Pauser.h"
 
+#include "modules/robot/Feedback.h"
+
 #include <malloc.h>
 #include <array>
 
@@ -125,6 +127,8 @@ Kernel::Kernel(){
     this->step_ticker->set_frequency( this->base_stepping_frequency );
 
     // Core modules
+    this->add_module( this->feedback	   = new Feedback()  	 );
+
     this->add_module( new GcodeDispatch() );
     this->add_module( this->robot          = new Robot()         );
     this->add_module( this->stepper        = new Stepper()       );

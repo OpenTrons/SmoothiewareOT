@@ -17,6 +17,7 @@ using std::string;
 #include "libs/StreamOutput.h"
 #include "libs/StreamOutputPool.h"
 
+
 // Serial reading module
 // Treats every received line as a command and passes it ( via event call ) to the command dispatcher.
 // The command dispatcher will then ask other modules if they can do something with it

@@ -57,6 +57,7 @@ private:
         volatile bool running:1;
         volatile bool flush:1;
         volatile bool halted:1;
+        volatile bool delayed_flush:1;
     };
 
 };

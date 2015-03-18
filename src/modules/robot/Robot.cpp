@@ -34,8 +34,20 @@ using std::string;
 #include "libs/StreamOutput.h"
 #include "StreamOutputPool.h"
 
+#include "Feedback.h"
+
 #define  default_seek_rate_checksum          CHECKSUM("default_seek_rate")
+
+#define  a_default_seek_rate_checksum          CHECKSUM("a_default_seek_rate")
+#define  b_default_seek_rate_checksum          CHECKSUM("b_default_seek_rate")
+#define  c_default_seek_rate_checksum          CHECKSUM("c_default_seek_rate")
+
 #define  default_feed_rate_checksum          CHECKSUM("default_feed_rate")
+
+#define  a_default_feed_rate_checksum          CHECKSUM("a_default_feed_rate")
+#define  b_default_feed_rate_checksum          CHECKSUM("b_default_feed_rate")
+#define  c_default_feed_rate_checksum          CHECKSUM("c_default_feed_rate")
+
 #define  mm_per_line_segment_checksum        CHECKSUM("mm_per_line_segment")
 #define  delta_segments_per_second_checksum  CHECKSUM("delta_segments_per_second")
 #define  mm_per_arc_segment_checksum         CHECKSUM("mm_per_arc_segment")
@@ -43,6 +55,10 @@ using std::string;
 #define  x_axis_max_speed_checksum           CHECKSUM("x_axis_max_speed")
 #define  y_axis_max_speed_checksum           CHECKSUM("y_axis_max_speed")
 #define  z_axis_max_speed_checksum           CHECKSUM("z_axis_max_speed")
+
+#define  a_axis_max_speed_checksum           CHECKSUM("a_axis_max_speed")
+#define  b_axis_max_speed_checksum           CHECKSUM("b_axis_max_speed")
+#define  c_axis_max_speed_checksum           CHECKSUM("c_axis_max_speed")
 
 // arm solutions
 #define  arm_solution_checksum               CHECKSUM("arm_solution")
@@ -67,14 +83,32 @@ using std::string;
 #define  beta_en_pin_checksum                CHECKSUM("beta_en_pin")
 #define  gamma_en_pin_checksum               CHECKSUM("gamma_en_pin")
 
+#define  chi_step_pin_checksum             	CHECKSUM("chi_step_pin")
+#define  psi_step_pin_checksum              CHECKSUM("psi_step_pin")
+#define  omega_step_pin_checksum            CHECKSUM("omega_step_pin")
+#define  chi_dir_pin_checksum              	CHECKSUM("chi_dir_pin")
+#define  psi_dir_pin_checksum               CHECKSUM("psi_dir_pin")
+#define  omega_dir_pin_checksum             CHECKSUM("omega_dir_pin")
+#define  chi_en_pin_checksum               	CHECKSUM("chi_en_pin")
+#define  psi_en_pin_checksum                CHECKSUM("psi_en_pin")
+#define  omega_en_pin_checksum              CHECKSUM("omega_en_pin")
+
+
 #define  alpha_steps_per_mm_checksum         CHECKSUM("alpha_steps_per_mm")
 #define  beta_steps_per_mm_checksum          CHECKSUM("beta_steps_per_mm")
 #define  gamma_steps_per_mm_checksum         CHECKSUM("gamma_steps_per_mm")
+
+#define  chi_steps_per_mm_checksum         	CHECKSUM("chi_steps_per_mm")
+#define  psi_steps_per_mm_checksum          CHECKSUM("psi_steps_per_mm")
+#define  omega_steps_per_mm_checksum        CHECKSUM("omega_steps_per_mm")
 
 #define  alpha_max_rate_checksum             CHECKSUM("alpha_max_rate")
 #define  beta_max_rate_checksum              CHECKSUM("beta_max_rate")
 #define  gamma_max_rate_checksum             CHECKSUM("gamma_max_rate")
 
+#define  chi_max_rate_checksum             	CHECKSUM("chi_max_rate")
+#define  psi_max_rate_checksum              CHECKSUM("psi_max_rate")
+#define  omega_max_rate_checksum            CHECKSUM("omega_max_rate")
 
 // new-style actuator stuff
 #define  actuator_checksum                   CHEKCSUM("actuator")
@@ -89,6 +123,10 @@ using std::string;
 #define  alpha_checksum                      CHECKSUM("alpha")
 #define  beta_checksum                       CHECKSUM("beta")
 #define  gamma_checksum                      CHECKSUM("gamma")
+
+#define  chi_checksum                      	CHECKSUM("chi")
+#define  psi_checksum                       CHECKSUM("psi")
+#define  omega_checksum                     CHECKSUM("omega")
 
 
 #define NEXT_ACTION_DEFAULT 0
@@ -115,6 +153,8 @@ using std::string;
 // The Robot converts GCodes into actual movements, and then adds them to the Planner, which passes them to the Conveyor so they can be added to the queue
 // It takes care of cutting arcs into segments, same thing for line that are too long
 #define max(a,b) (((a) > (b)) ? (a) : (b))
+
+#define DEBUG	0
 
 Robot::Robot()
 {
@@ -173,16 +213,31 @@ void Robot::on_config_reload(void *argument)
     }
 
 
-    this->feed_rate           = THEKERNEL->config->value(default_feed_rate_checksum   )->by_default(  100.0F)->as_number();
-    this->seek_rate           = THEKERNEL->config->value(default_seek_rate_checksum   )->by_default(  100.0F)->as_number();
+    this->feed_rate           = THEKERNEL->config->value(default_feed_rate_checksum   )->by_default(  3000.0F)->as_number();
+
+    this->a_feed_rate           = THEKERNEL->config->value(a_default_feed_rate_checksum   )->by_default(  300.0F)->as_number();
+    this->b_feed_rate           = THEKERNEL->config->value(b_default_feed_rate_checksum   )->by_default(  300.0F)->as_number();
+    this->c_feed_rate           = THEKERNEL->config->value(c_default_feed_rate_checksum   )->by_default(  300.0F)->as_number();
+
+    this->seek_rate           = THEKERNEL->config->value(default_seek_rate_checksum   )->by_default(  3000.0F)->as_number();
+
+    this->a_seek_rate           = THEKERNEL->config->value(a_default_seek_rate_checksum   )->by_default(  300.0F)->as_number();
+    this->b_seek_rate           = THEKERNEL->config->value(b_default_seek_rate_checksum   )->by_default(  300.0F)->as_number();
+    this->c_seek_rate           = THEKERNEL->config->value(c_default_seek_rate_checksum   )->by_default(  300.0F)->as_number();
+
+    this->default_seek_rates[0] = this->seek_rate;
+    this->default_seek_rates[1] = this->a_seek_rate;
+    this->default_seek_rates[2] = this->b_seek_rate;
+    this->default_seek_rates[3] = this->c_seek_rate;
+
     this->mm_per_line_segment = THEKERNEL->config->value(mm_per_line_segment_checksum )->by_default(    0.0F)->as_number();
     this->delta_segments_per_second = THEKERNEL->config->value(delta_segments_per_second_checksum )->by_default(0.0f   )->as_number();
     this->mm_per_arc_segment  = THEKERNEL->config->value(mm_per_arc_segment_checksum  )->by_default(    0.5f)->as_number();
     this->arc_correction      = THEKERNEL->config->value(arc_correction_checksum      )->by_default(    5   )->as_number();
 
-    this->max_speeds[X_AXIS]  = THEKERNEL->config->value(x_axis_max_speed_checksum    )->by_default(60000.0F)->as_number() / 60.0F;
-    this->max_speeds[Y_AXIS]  = THEKERNEL->config->value(y_axis_max_speed_checksum    )->by_default(60000.0F)->as_number() / 60.0F;
-    this->max_speeds[Z_AXIS]  = THEKERNEL->config->value(z_axis_max_speed_checksum    )->by_default(  300.0F)->as_number() / 60.0F;
+    this->max_speeds[X_AXIS]  = THEKERNEL->config->value(x_axis_max_speed_checksum    )->by_default(30000.0F)->as_number() / 60.0F;
+    this->max_speeds[Y_AXIS]  = THEKERNEL->config->value(y_axis_max_speed_checksum    )->by_default(30000.0F)->as_number() / 60.0F;
+    this->max_speeds[Z_AXIS]  = THEKERNEL->config->value(z_axis_max_speed_checksum    )->by_default( 1200.0F)->as_number() / 60.0F;
 
     Pin alpha_step_pin;
     Pin alpha_dir_pin;
@@ -194,21 +249,49 @@ void Robot::on_config_reload(void *argument)
     Pin gamma_dir_pin;
     Pin gamma_en_pin;
 
+    Pin chi_step_pin;
+	Pin chi_dir_pin;
+	Pin chi_en_pin;
+	Pin psi_step_pin;
+	Pin psi_dir_pin;
+	Pin psi_en_pin;
+	Pin omega_step_pin;
+	Pin omega_dir_pin;
+	Pin omega_en_pin;
+
     alpha_step_pin.from_string( THEKERNEL->config->value(alpha_step_pin_checksum )->by_default("2.0"  )->as_string())->as_output();
-    alpha_dir_pin.from_string(  THEKERNEL->config->value(alpha_dir_pin_checksum  )->by_default("0.5"  )->as_string())->as_output();
+    alpha_dir_pin.from_string(  THEKERNEL->config->value(alpha_dir_pin_checksum  )->by_default("0.5!" )->as_string())->as_output();
     alpha_en_pin.from_string(   THEKERNEL->config->value(alpha_en_pin_checksum   )->by_default("0.4"  )->as_string())->as_output();
     beta_step_pin.from_string(  THEKERNEL->config->value(beta_step_pin_checksum  )->by_default("2.1"  )->as_string())->as_output();
-    beta_dir_pin.from_string(   THEKERNEL->config->value(beta_dir_pin_checksum   )->by_default("0.11" )->as_string())->as_output();
+    beta_dir_pin.from_string(   THEKERNEL->config->value(beta_dir_pin_checksum   )->by_default("0.11!")->as_string())->as_output();
     beta_en_pin.from_string(    THEKERNEL->config->value(beta_en_pin_checksum    )->by_default("0.10" )->as_string())->as_output();
     gamma_step_pin.from_string( THEKERNEL->config->value(gamma_step_pin_checksum )->by_default("2.2"  )->as_string())->as_output();
     gamma_dir_pin.from_string(  THEKERNEL->config->value(gamma_dir_pin_checksum  )->by_default("0.20" )->as_string())->as_output();
     gamma_en_pin.from_string(   THEKERNEL->config->value(gamma_en_pin_checksum   )->by_default("0.19" )->as_string())->as_output();
 
-    float steps_per_mm[3] = {
+    chi_step_pin.from_string(   THEKERNEL->config->value(chi_step_pin_checksum   )->by_default("2.3"  )->as_string())->as_output();
+    chi_dir_pin.from_string(    THEKERNEL->config->value(chi_dir_pin_checksum    )->by_default("0.22" )->as_string())->as_output();
+    chi_en_pin.from_string(     THEKERNEL->config->value(chi_en_pin_checksum     )->by_default("0.21" )->as_string())->as_output();
+    psi_step_pin.from_string(   THEKERNEL->config->value(psi_step_pin_checksum   )->by_default("2.8"  )->as_string())->as_output();
+    psi_dir_pin.from_string(    THEKERNEL->config->value(psi_dir_pin_checksum    )->by_default("2.13" )->as_string())->as_output();
+    psi_en_pin.from_string(     THEKERNEL->config->value(psi_en_pin_checksum     )->by_default("4.29" )->as_string())->as_output();
+    omega_step_pin.from_string( THEKERNEL->config->value(omega_step_pin_checksum )->by_default("nc"   )->as_string())->as_output();
+    omega_dir_pin.from_string(  THEKERNEL->config->value(omega_dir_pin_checksum  )->by_default("nc"   )->as_string())->as_output();
+    omega_en_pin.from_string(   THEKERNEL->config->value(omega_en_pin_checksum   )->by_default("nc"   )->as_string())->as_output();
+
+
+    float steps_per_mm[6] = {
         THEKERNEL->config->value(alpha_steps_per_mm_checksum)->by_default(  80.0F)->as_number(),
         THEKERNEL->config->value(beta_steps_per_mm_checksum )->by_default(  80.0F)->as_number(),
-        THEKERNEL->config->value(gamma_steps_per_mm_checksum)->by_default(2560.0F)->as_number(),
+        THEKERNEL->config->value(gamma_steps_per_mm_checksum)->by_default(1050.0F)->as_number(),
+        THEKERNEL->config->value(chi_steps_per_mm_checksum)->by_default(  1400.0F)->as_number(),
+        THEKERNEL->config->value(psi_steps_per_mm_checksum)->by_default(  1400.0F)->as_number(),
+        THEKERNEL->config->value(omega_steps_per_mm_checksum)->by_default(1400.0F)->as_number()
     };
+
+    for(int i=0; i<6; i++) {
+    	THEKERNEL->feedback->steps_per_mm[i] = steps_per_mm[i];
+    }
 
     // TODO: delete or detect old steppermotors
     // Make our 3 StepperMotors
@@ -216,13 +299,26 @@ void Robot::on_config_reload(void *argument)
     this->beta_stepper_motor   = THEKERNEL->step_ticker->add_stepper_motor( new StepperMotor(beta_step_pin,  beta_dir_pin,  beta_en_pin ) );
     this->gamma_stepper_motor  = THEKERNEL->step_ticker->add_stepper_motor( new StepperMotor(gamma_step_pin, gamma_dir_pin, gamma_en_pin) );
 
+    this->chi_stepper_motor    = THEKERNEL->step_ticker->add_stepper_motor( new StepperMotor(chi_step_pin,   chi_dir_pin,   chi_en_pin  ) );
+    this->psi_stepper_motor    = THEKERNEL->step_ticker->add_stepper_motor( new StepperMotor(psi_step_pin,   psi_dir_pin,   psi_en_pin  ) );
+    this->omega_stepper_motor  = THEKERNEL->step_ticker->add_stepper_motor( new StepperMotor(omega_step_pin, omega_dir_pin, omega_en_pin) );
+
     alpha_stepper_motor->change_steps_per_mm(steps_per_mm[0]);
     beta_stepper_motor->change_steps_per_mm(steps_per_mm[1]);
     gamma_stepper_motor->change_steps_per_mm(steps_per_mm[2]);
 
+    chi_stepper_motor->change_steps_per_mm(steps_per_mm[3]);
+	psi_stepper_motor->change_steps_per_mm(steps_per_mm[4]);
+	omega_stepper_motor->change_steps_per_mm(steps_per_mm[5]);
+
     alpha_stepper_motor->max_rate = THEKERNEL->config->value(alpha_max_rate_checksum)->by_default(30000.0F)->as_number() / 60.0F;
     beta_stepper_motor->max_rate  = THEKERNEL->config->value(beta_max_rate_checksum )->by_default(30000.0F)->as_number() / 60.0F;
-    gamma_stepper_motor->max_rate = THEKERNEL->config->value(gamma_max_rate_checksum)->by_default(30000.0F)->as_number() / 60.0F;
+    gamma_stepper_motor->max_rate = THEKERNEL->config->value(gamma_max_rate_checksum)->by_default(20000.0F)->as_number() / 60.0F;
+
+    chi_stepper_motor->max_rate   = THEKERNEL->config->value(chi_max_rate_checksum  )->by_default(10000.0F)->as_number() / 60.0F;
+    psi_stepper_motor->max_rate   = THEKERNEL->config->value(psi_max_rate_checksum  )->by_default(10000.0F)->as_number() / 60.0F;
+    omega_stepper_motor->max_rate = THEKERNEL->config->value(omega_max_rate_checksum)->by_default(10000.0F)->as_number() / 60.0F;
+
     check_max_actuator_speeds(); // check the configs are sane
 
     actuators.clear();
@@ -230,13 +326,19 @@ void Robot::on_config_reload(void *argument)
     actuators.push_back(beta_stepper_motor);
     actuators.push_back(gamma_stepper_motor);
 
+    actuators.push_back(chi_stepper_motor);
+	actuators.push_back(psi_stepper_motor);
+	actuators.push_back(omega_stepper_motor);
+
 
     // initialise actuator positions to current cartesian position (X0 Y0 Z0)
     // so the first move can be correct if homing is not performed
-    float actuator_pos[3];
+    float actuator_pos[6];
     arm_solution->cartesian_to_actuator(last_milestone, actuator_pos);
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 6; i++){
         actuators[i]->change_last_milestone(actuator_pos[i]);
+        actuators[i]->set_id(i);
+    }
 
     //this->clearToolOffset();
 }
@@ -245,28 +347,46 @@ void Robot::on_config_reload(void *argument)
 // we will override the actuator max_rate if the combination of max_rate and steps/sec exceeds base_stepping_frequency
 void Robot::check_max_actuator_speeds()
 {
-    float step_freq= alpha_stepper_motor->max_rate * alpha_stepper_motor->get_steps_per_mm();
+    float step_freq = alpha_stepper_motor->max_rate * alpha_stepper_motor->get_steps_per_mm();
     if(step_freq > THEKERNEL->base_stepping_frequency) {
-        alpha_stepper_motor->max_rate= floorf(THEKERNEL->base_stepping_frequency / alpha_stepper_motor->get_steps_per_mm());
+        alpha_stepper_motor->max_rate = floorf(THEKERNEL->base_stepping_frequency / alpha_stepper_motor->get_steps_per_mm());
         THEKERNEL->streams->printf("WARNING: alpha_max_rate exceeds base_stepping_frequency * alpha_steps_per_mm: %f, setting to %f\n", step_freq, alpha_stepper_motor->max_rate);
     }
 
-    step_freq= beta_stepper_motor->max_rate * beta_stepper_motor->get_steps_per_mm();
+    step_freq = beta_stepper_motor->max_rate * beta_stepper_motor->get_steps_per_mm();
     if(step_freq > THEKERNEL->base_stepping_frequency) {
-        beta_stepper_motor->max_rate= floorf(THEKERNEL->base_stepping_frequency / beta_stepper_motor->get_steps_per_mm());
+        beta_stepper_motor->max_rate = floorf(THEKERNEL->base_stepping_frequency / beta_stepper_motor->get_steps_per_mm());
         THEKERNEL->streams->printf("WARNING: beta_max_rate exceeds base_stepping_frequency * beta_steps_per_mm: %f, setting to %f\n", step_freq, beta_stepper_motor->max_rate);
     }
 
-    step_freq= gamma_stepper_motor->max_rate * gamma_stepper_motor->get_steps_per_mm();
+    step_freq = gamma_stepper_motor->max_rate * gamma_stepper_motor->get_steps_per_mm();
     if(step_freq > THEKERNEL->base_stepping_frequency) {
-        gamma_stepper_motor->max_rate= floorf(THEKERNEL->base_stepping_frequency / gamma_stepper_motor->get_steps_per_mm());
+        gamma_stepper_motor->max_rate = floorf(THEKERNEL->base_stepping_frequency / gamma_stepper_motor->get_steps_per_mm());
         THEKERNEL->streams->printf("WARNING: gamma_max_rate exceeds base_stepping_frequency * gamma_steps_per_mm: %f, setting to %f\n", step_freq, gamma_stepper_motor->max_rate);
+    }
+
+    step_freq = chi_stepper_motor->max_rate * chi_stepper_motor->get_steps_per_mm();
+    if(step_freq > THEKERNEL->base_stepping_frequency) {
+        chi_stepper_motor->max_rate = floorf(THEKERNEL->base_stepping_frequency / chi_stepper_motor->get_steps_per_mm());
+        THEKERNEL->streams->printf("WARNING: chi_max_rate exceeds base_stepping_frequency * chi_steps_per_mm: %f, setting to %f\n", step_freq, chi_stepper_motor->max_rate);
+    }
+
+    step_freq = psi_stepper_motor->max_rate * psi_stepper_motor->get_steps_per_mm();
+    if(step_freq > THEKERNEL->base_stepping_frequency) {
+        psi_stepper_motor->max_rate = floorf(THEKERNEL->base_stepping_frequency / psi_stepper_motor->get_steps_per_mm());
+        THEKERNEL->streams->printf("WARNING: psi_max_rate exceeds base_stepping_frequency * psi_steps_per_mm: %f, setting to %f\n", step_freq, psi_stepper_motor->max_rate);
+    }
+
+    step_freq = omega_stepper_motor->max_rate * omega_stepper_motor->get_steps_per_mm();
+    if(step_freq > THEKERNEL->base_stepping_frequency) {
+        omega_stepper_motor->max_rate = floorf(THEKERNEL->base_stepping_frequency / omega_stepper_motor->get_steps_per_mm());
+        THEKERNEL->streams->printf("WARNING: omega_max_rate exceeds base_stepping_frequency * omega_steps_per_mm: %f, setting to %f\n", step_freq, omega_stepper_motor->max_rate);
     }
 }
 
 void Robot::on_halt(void *arg)
 {
-    halted= (arg == nullptr);
+    halted = (arg == nullptr);
 }
 
 void Robot::on_get_public_data(void *argument)
@@ -312,9 +432,9 @@ void Robot::on_set_public_data(void *argument)
             this->last_milestone[i] = this->to_millimeters(t[i]);
         }
 
-        float actuator_pos[3];
+        float actuator_pos[6];
         arm_solution->cartesian_to_actuator(last_milestone, actuator_pos);
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 6; i++)
             actuators[i]->change_last_milestone(actuator_pos[i]);
 
         pdr->set_taken();
@@ -329,7 +449,7 @@ void Robot::on_gcode_received(void *argument)
 
     this->motion_mode = -1;
 
-    //G-letter Gcodes are mostly what the Robot module is interrested in, other modules also catch the gcode event and do stuff accordingly
+    //G-letter Gcodes are mostly what the Robot module is interested in, other modules also catch the gcode event and do stuff accordingly
     if( gcode->has_g) {
         switch( gcode->g ) {
             case 0:  this->motion_mode = MOTION_MODE_SEEK; gcode->mark_as_taken(); break;
@@ -355,15 +475,21 @@ void Robot::on_gcode_received(void *argument)
                             reset_axis_position(this->to_millimeters(gcode->get_value(letter)), letter - 'X');
                         }
                     }
+                    for (char letter = 'A'; letter <= 'C'; letter++) {
+						if ( gcode->has_letter(letter) ) {
+							reset_axis_position(this->to_millimeters(gcode->get_value(letter)), (letter - 'A')+3 );
+						}
+					}
                 }
 
                 gcode->mark_as_taken();
-                return;
+
             }
+            return;
         }
     } else if( gcode->has_m) {
         switch( gcode->m ) {
-            case 92: // M92 - set steps per mm
+            case 92:{ // M92 - set steps per mm
                 if (gcode->has_letter('X'))
                     actuators[0]->change_steps_per_mm(this->to_millimeters(gcode->get_value('X')));
                 if (gcode->has_letter('Y'))
@@ -377,10 +503,11 @@ void Robot::on_gcode_received(void *argument)
                 gcode->add_nl = true;
                 gcode->mark_as_taken();
                 check_max_actuator_speeds();
-                return;
+            }
+            return;
             case 114: {
                 char buf[64];
-                int n = snprintf(buf, sizeof(buf), "C: X:%1.3f Y:%1.3f Z:%1.3f A:%1.3f B:%1.3f C:%1.3f ",
+                int n = snprintf(buf, sizeof(buf), "C: X:%1.3f Y:%1.3f Z:%1.3f x:%1.3f y:%1.3f z:%1.3f\r\n",
                                  from_millimeters(this->last_milestone[0]),
                                  from_millimeters(this->last_milestone[1]),
                                  from_millimeters(this->last_milestone[2]),
@@ -388,11 +515,21 @@ void Robot::on_gcode_received(void *argument)
                                  actuators[Y_AXIS]->get_current_position(),
                                  actuators[Z_AXIS]->get_current_position() );
                 gcode->txt_after_ok.append(buf, n);
+                char abc_buf[64];
+				int p = snprintf(abc_buf, sizeof(abc_buf), "C: A:%1.3f B:%1.3f C:%1.3f a:%1.3f b:%1.3f c:%1.3f\r\n",
+								 from_millimeters(this->last_milestone[3]),
+								 from_millimeters(this->last_milestone[4]),
+								 from_millimeters(this->last_milestone[5]),
+								 actuators[A_AXIS]->get_current_position(),
+								 actuators[B_AXIS]->get_current_position(),
+								 actuators[C_AXIS]->get_current_position() );
+				gcode->txt_after_ok.append(abc_buf, p);
                 gcode->mark_as_taken();
+
             }
             return;
 
-            case 203: // M203 Set maximum feedrates in mm/sec
+            case 203:{ // M203 Set maximum feedrates in mm/sec
                 if (gcode->has_letter('X'))
                     this->max_speeds[X_AXIS] = gcode->get_value('X');
                 if (gcode->has_letter('Y'))
@@ -413,9 +550,10 @@ void Robot::on_gcode_received(void *argument)
                                       alpha_stepper_motor->max_rate, beta_stepper_motor->max_rate, gamma_stepper_motor->max_rate);
                 gcode->add_nl = true;
                 gcode->mark_as_taken();
-                break;
 
-            case 204: // M204 Snnn - set acceleration to nnn, Znnn sets z acceleration
+            }
+            break;
+            case 204:{ // M204 Snnn - set acceleration to nnn, Znnn sets z acceleration
                 gcode->mark_as_taken();
 
                 if (gcode->has_letter('S')) {
@@ -436,9 +574,31 @@ void Robot::on_gcode_received(void *argument)
                         acc = 0.0F;
                     THEKERNEL->planner->z_acceleration = acc;
                 }
-                break;
+                if (gcode->has_letter('A')){
+                	THEKERNEL->conveyor->wait_for_empty_queue();
+                	float acc = gcode->get_value('A');
+                	if (acc < 1.0F)
+                		acc = 1.0F;
+                	THEKERNEL->planner->a_acceleration = acc;
+                }
+                if (gcode->has_letter('B')){
+					THEKERNEL->conveyor->wait_for_empty_queue();
+					float acc = gcode->get_value('B');
+					if (acc < 1.0F)
+						acc = 1.0F;
+					THEKERNEL->planner->b_acceleration = acc;
+				}
+                if (gcode->has_letter('C')){
+					THEKERNEL->conveyor->wait_for_empty_queue();
+					float acc = gcode->get_value('C');
+					if (acc < 1.0F)
+						acc = 1.0F;
+					THEKERNEL->planner->c_acceleration = acc;
+				}
 
-            case 205: // M205 Xnnn - set junction deviation, Z - set Z junction deviation, Snnn - Set minimum planner speed
+            }
+            break;
+            case 205:{ // M205 Xnnn - set junction deviation, Z - set Z junction deviation, Snnn - Set minimum planner speed
                 gcode->mark_as_taken();
                 if (gcode->has_letter('X')) {
                     float jd = gcode->get_value('X');
@@ -461,9 +621,10 @@ void Robot::on_gcode_received(void *argument)
                         mps = 0.0F;
                     THEKERNEL->planner->minimum_planner_speed = mps;
                 }
-                break;
+            }
+            break;
 
-            case 220: // M220 - speed override percentage
+            case 220:{ // M220 - speed override percentage
                 gcode->mark_as_taken();
                 if (gcode->has_letter('S')) {
                     float factor = gcode->get_value('S');
@@ -476,13 +637,15 @@ void Robot::on_gcode_received(void *argument)
 
                     seconds_per_minute = 6000.0F / factor;
                 }
-                break;
 
-            case 400: // wait until all moves are done up to this point
+            }
+            break;
+            case 400:{ // wait until all moves are done up to this point
                 gcode->mark_as_taken();
                 THEKERNEL->conveyor->wait_for_empty_queue();
-                break;
 
+            }
+            break;
             case 500: // M500 saves some volatile settings to config override file
             case 503: { // M503 just prints the settings
                 gcode->stream->printf(";Steps per unit:\nM92 X%1.5f Y%1.5f Z%1.5f\n", actuators[0]->steps_per_mm, actuators[1]->steps_per_mm, actuators[2]->steps_per_mm);
@@ -502,9 +665,9 @@ void Robot::on_gcode_received(void *argument)
                     gcode->stream->printf("\n");
                 }
                 gcode->mark_as_taken();
-                break;
-            }
 
+            }
+            break;
             case 665: { // M665 set optional arm solution variables based on arm solution.
                 gcode->mark_as_taken();
                 // the parameter args could be any letter except S so ask solution what options it supports
@@ -528,8 +691,9 @@ void Robot::on_gcode_received(void *argument)
                 if(gcode->has_letter('S')) {
                     this->delta_segments_per_second = gcode->get_value('S');
                 }
-                break;
+
             }
+            break;
         }
     }
 
@@ -537,10 +701,19 @@ void Robot::on_gcode_received(void *argument)
         return;
 
     //Get parameters
-    float target[3], offset[3];
+    float target[6], offset[3];
     clear_vector(offset);
 
+    if(DEBUG) THEKERNEL->streams->printf("sizeof(target) = %i\r\n",sizeof(target));
+    if(DEBUG) THEKERNEL->streams->printf("3.last_milestone:\r\n{");
+	for(int i=0;i<5;i++){
+		if(DEBUG) THEKERNEL->streams->printf("%f,",this->last_milestone[i]);
+	}
+	if(DEBUG) THEKERNEL->streams->printf("%f}\r\n",this->last_milestone[5]);
     memcpy(target, this->last_milestone, sizeof(target));    //default to last target
+    //for(int i=0; i<6; i++) {
+    //	target[i] = this->last_milestone[i];
+    //}
 
     for(char letter = 'I'; letter <= 'K'; letter++) {
         if( gcode->has_letter(letter) ) {
@@ -552,6 +725,11 @@ void Robot::on_gcode_received(void *argument)
             target[letter - 'X'] = this->to_millimeters(gcode->get_value(letter)) + (this->absolute_mode ? this->toolOffset[letter - 'X'] : target[letter - 'X']);
         }
     }
+    for(char letter = 'A'; letter <= 'C'; letter++) {
+		if( gcode->has_letter(letter) ) {
+			target[(letter - 'A') + 3] = this->to_millimeters(gcode->get_value(letter)) + (this->absolute_mode ? 0.0F  : target[(letter - 'A') + 3]);
+		}
+	}
 
     if( gcode->has_letter('F') ) {
         if( this->motion_mode == MOTION_MODE_SEEK )
@@ -560,11 +738,34 @@ void Robot::on_gcode_received(void *argument)
             this->feed_rate = this->to_millimeters( gcode->get_value('F') );
     }
 
+    if( gcode->has_letter('a') ) {
+		if( this->motion_mode == MOTION_MODE_SEEK )
+			this->a_seek_rate = this->to_millimeters( gcode->get_value('a') );
+		else
+			this->a_feed_rate = this->to_millimeters( gcode->get_value('a') );
+	}
+
+	if( gcode->has_letter('b') ) {
+		if( this->motion_mode == MOTION_MODE_SEEK )
+			this->b_seek_rate = this->to_millimeters( gcode->get_value('b') );
+		else
+			this->b_feed_rate = this->to_millimeters( gcode->get_value('b') );
+	}
+
+	if( gcode->has_letter('c') ) {
+		if( this->motion_mode == MOTION_MODE_SEEK )
+			this->c_seek_rate = this->to_millimeters( gcode->get_value('c') );
+		else
+			this->c_feed_rate = this->to_millimeters( gcode->get_value('c') );
+	}
+
+
+
     //Perform any physical actions
     switch(this->motion_mode) {
         case MOTION_MODE_CANCEL: break;
-        case MOTION_MODE_SEEK  : this->append_line(gcode, target, this->seek_rate / seconds_per_minute ); break;
-        case MOTION_MODE_LINEAR: this->append_line(gcode, target, this->feed_rate / seconds_per_minute ); break;
+        case MOTION_MODE_SEEK  : this->append_line(gcode, target, this->seek_rate / seconds_per_minute, this->a_seek_rate / seconds_per_minute, this->b_seek_rate / seconds_per_minute, this->c_seek_rate / seconds_per_minute ); break;
+        case MOTION_MODE_LINEAR: this->append_line(gcode, target, this->feed_rate / seconds_per_minute, this->a_feed_rate / seconds_per_minute, this->b_feed_rate / seconds_per_minute, this->c_feed_rate / seconds_per_minute ); break;
         case MOTION_MODE_CW_ARC:
         case MOTION_MODE_CCW_ARC: this->compute_arc(gcode, offset, target ); break;
     }
@@ -578,23 +779,32 @@ void Robot::on_gcode_received(void *argument)
 // and continue
 void Robot::distance_in_gcode_is_known(Gcode *gcode)
 {
-    //If the queue is empty, execute immediatly, otherwise attach to the last added block
+    //If the queue is empty, execute immediately, otherwise attach to the last added block
     THEKERNEL->conveyor->append_gcode(gcode);
 }
 
 // reset the position for all axis (used in homing for delta as last_milestone may be bogus)
-void Robot::reset_axis_position(float x, float y, float z)
+void Robot::reset_axis_position(float x, float y, float z, float a, float b, float c)
 {
     this->last_milestone[X_AXIS] = x;
     this->last_milestone[Y_AXIS] = y;
     this->last_milestone[Z_AXIS] = z;
+
+    this->last_milestone[A_AXIS] = a;
+	this->last_milestone[B_AXIS] = b;
+	this->last_milestone[C_AXIS] = c;
+
     this->transformed_last_milestone[X_AXIS] = x;
     this->transformed_last_milestone[Y_AXIS] = y;
     this->transformed_last_milestone[Z_AXIS] = z;
 
-    float actuator_pos[3];
+    this->transformed_last_milestone[A_AXIS] = a;
+	this->transformed_last_milestone[B_AXIS] = b;
+	this->transformed_last_milestone[C_AXIS] = c;
+
+    float actuator_pos[6];
     arm_solution->cartesian_to_actuator(this->last_milestone, actuator_pos);
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 6; i++)
         actuators[i]->change_last_milestone(actuator_pos[i]);
 }
 
@@ -604,32 +814,52 @@ void Robot::reset_axis_position(float position, int axis)
     this->last_milestone[axis] = position;
     this->transformed_last_milestone[axis] = position;
 
-    float actuator_pos[3];
+    float actuator_pos[6];
     arm_solution->cartesian_to_actuator(this->last_milestone, actuator_pos);
 
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 6; i++) {
         actuators[i]->change_last_milestone(actuator_pos[i]);
+        THEKERNEL->feedback->cumulative_steps[i] = actuator_pos[i] * THEKERNEL->feedback->steps_per_mm[i];
+        THEKERNEL->feedback->cumulative_steps_last[i] = THEKERNEL->feedback->cumulative_steps[i]-1.0F;
+    }
 }
 
 // Use FK to find out where actuator is and reset lastmilestone to match
 void Robot::reset_position_from_current_actuator_position()
 {
-    float actuator_pos[]= {actuators[X_AXIS]->get_current_position(), actuators[Y_AXIS]->get_current_position(), actuators[Z_AXIS]->get_current_position()};
+    float actuator_pos[]= {actuators[X_AXIS]->get_current_position(), actuators[Y_AXIS]->get_current_position(), actuators[Z_AXIS]->get_current_position(), actuators[A_AXIS]->get_current_position(), actuators[B_AXIS]->get_current_position(), actuators[C_AXIS]->get_current_position()};
     arm_solution->actuator_to_cartesian(actuator_pos, this->last_milestone);
+
+    if(DEBUG) THEKERNEL->streams->printf("sizeof(this->t_l_m) = %i \r\n",sizeof(this->transformed_last_milestone));
     memcpy(this->transformed_last_milestone, this->last_milestone, sizeof(this->transformed_last_milestone));
+    //for(int i=0; i<6; i++) {
+    //	this->transformed_last_milestone[i] = this->last_milestone[i];
+    //}
 }
 
 // Convert target from millimeters to steps, and append this to the planner
-void Robot::append_milestone( float target[], float rate_mm_s )
+void Robot::append_milestone( float target[], float rate_mm_s, float a_rate_mm_s, float b_rate_mm_s, float c_rate_mm_s )
 {
-    float deltas[3];
+    float deltas[6];
     float unit_vec[3];
-    float actuator_pos[3];
-    float transformed_target[3]; // adjust target for bed compensation
+    float actuator_pos[6];
+    float transformed_target[6]; // adjust target for bed compensation
     float millimeters_of_travel;
 
+    float a_millimeters_of_travel, b_millimeters_of_travel, c_millimeters_of_travel;
+
+    if(DEBUG) THEKERNEL->streams->printf("0.target:\r\n{");
+	for(int i=0;i<5;i++){
+		if(DEBUG) THEKERNEL->streams->printf("%f,",target[i]);
+	}
+	if(DEBUG) THEKERNEL->streams->printf("%f}\r\n",target[5]);
+
     // unity transform by default
+    if(DEBUG) THEKERNEL->streams->printf("sizeof(transformed_target) = %i \r\n",sizeof(transformed_target));
     memcpy(transformed_target, target, sizeof(transformed_target));
+    //for(int i=0; i<6; i++) {
+    //	transformed_target[i] = target[i];
+    //}
 
     // check function pointer and call if set to transform the target to compensate for bed
     if(compensationTransform) {
@@ -637,15 +867,38 @@ void Robot::append_milestone( float target[], float rate_mm_s )
         compensationTransform(transformed_target);
     }
 
+    if(DEBUG) THEKERNEL->streams->printf("1.transformed_last_milestone:\r\n{");
+	for(int i=0;i<5;i++){
+		if(DEBUG) THEKERNEL->streams->printf("%f,",transformed_last_milestone[i]);
+	}
+	if(DEBUG) THEKERNEL->streams->printf("%f}\r\n",transformed_last_milestone[5]);
+
+
     // find distance moved by each axis, use transformed target from last_transformed_target
     for (int axis = X_AXIS; axis <= Z_AXIS; axis++){
         deltas[axis] = transformed_target[axis] - transformed_last_milestone[axis];
     }
+    for (int axis = A_AXIS; axis <= C_AXIS; axis++){
+		deltas[axis] = transformed_target[axis] - transformed_last_milestone[axis];
+	}
     // store last transformed
+    if(DEBUG) THEKERNEL->streams->printf("sizeof(t_l_m) = %i \r\n",sizeof(this->transformed_last_milestone));
+    if(DEBUG) THEKERNEL->streams->printf("2.transformed_target:\r\n{");
+    for(int i=0;i<5;i++){
+    	if(DEBUG) THEKERNEL->streams->printf("%f,",transformed_target[i]);
+    }
+    if(DEBUG) THEKERNEL->streams->printf("%f}\r\n",transformed_target[5]);
     memcpy(this->transformed_last_milestone, transformed_target, sizeof(this->transformed_last_milestone));
+    //for(int i=0; i<6; i++) {
+    //	this->transformed_last_milestone[i] = transformed_target[i];
+    //}
 
     // Compute how long this move moves, so we can attach it to the block for later use
     millimeters_of_travel = sqrtf( powf( deltas[X_AXIS], 2 ) +  powf( deltas[Y_AXIS], 2 ) +  powf( deltas[Z_AXIS], 2 ) );
+
+    a_millimeters_of_travel = sqrtf( powf( deltas[A_AXIS], 2 ));
+    b_millimeters_of_travel = sqrtf( powf( deltas[B_AXIS], 2 ));
+    c_millimeters_of_travel = sqrtf( powf( deltas[C_AXIS], 2 ));
 
     // find distance unit vector
     for (int i = 0; i < 3; i++)
@@ -661,9 +914,15 @@ void Robot::append_milestone( float target[], float rate_mm_s )
         }
     }
 
+
+
     // find actuator position given cartesian position, use actual adjusted target
     arm_solution->cartesian_to_actuator( transformed_target, actuator_pos );
-
+    if(DEBUG) THEKERNEL->streams->printf("actuator_pos:\r\n{");
+    for(int i=0;i<5;i++){
+		if(DEBUG) THEKERNEL->streams->printf("%f,",actuator_pos[i]);
+	}
+	if(DEBUG) THEKERNEL->streams->printf("%f}\r\n",actuator_pos[5]);
     // check per-actuator speed limits
     for (int actuator = 0; actuator <= 2; actuator++) {
         float actuator_rate  = fabs(actuator_pos[actuator] - actuators[actuator]->last_milestone_mm) * rate_mm_s / millimeters_of_travel;
@@ -673,26 +932,56 @@ void Robot::append_milestone( float target[], float rate_mm_s )
     }
 
     // Append the block to the planner
-    THEKERNEL->planner->append_block( actuator_pos, rate_mm_s, millimeters_of_travel, unit_vec );
+    THEKERNEL->planner->append_block( actuator_pos, rate_mm_s, millimeters_of_travel, unit_vec, a_rate_mm_s, b_rate_mm_s, c_rate_mm_s, a_millimeters_of_travel, b_millimeters_of_travel, c_millimeters_of_travel );
 
     // Update the last_milestone to the current target for the next time we use last_milestone, use the requested target not the adjusted one
-    memcpy(this->last_milestone, target, sizeof(this->last_milestone)); // this->last_milestone[] = target[];
 
+    if(DEBUG) THEKERNEL->streams->printf("sizeof(last_milestone) = %i\r\n", sizeof(this->last_milestone));
+    memcpy(this->last_milestone, target, sizeof(this->last_milestone)); // this->last_milestone[] = target[];
+    //for( int i=0;i<6;i++) {
+    //	this->last_milestone[i] = target[i];
+    //}
 }
 
 // Append a move to the queue ( cutting it into segments if needed )
-void Robot::append_line(Gcode *gcode, float target[], float rate_mm_s )
+void Robot::append_line(Gcode *gcode, float target[], float rate_mm_s, float a_rate_mm_s, float b_rate_mm_s, float c_rate_mm_s )
 {
 
+	if(DEBUG) THEKERNEL->streams->printf("-1.target:\r\n{");
+	for(int i=0;i<5;i++){
+		if(DEBUG) THEKERNEL->streams->printf("%f,",target[i]);
+	}
+	if(DEBUG) THEKERNEL->streams->printf("%f}\r\n",target[5]);
     // Find out the distance for this gcode
     gcode->millimeters_of_travel = powf( target[X_AXIS] - this->last_milestone[X_AXIS], 2 ) +  powf( target[Y_AXIS] - this->last_milestone[Y_AXIS], 2 ) +  powf( target[Z_AXIS] - this->last_milestone[Z_AXIS], 2 );
 
+    float a_millimeters_of_travel, b_millimeters_of_travel, c_millimeters_of_travel;
+
+    a_millimeters_of_travel = powf( target[A_AXIS] - this->last_milestone[A_AXIS], 2 );
+    b_millimeters_of_travel = powf( target[B_AXIS] - this->last_milestone[B_AXIS], 2 );
+    c_millimeters_of_travel = powf( target[C_AXIS] - this->last_milestone[C_AXIS], 2 );
+
+    if(DEBUG)THEKERNEL->streams->printf("a_millimeters_of_travel = %f\r\n",a_millimeters_of_travel);
+    if(DEBUG)THEKERNEL->streams->printf("b_millimeters_of_travel = %f\r\n",b_millimeters_of_travel);
+    if(DEBUG)THEKERNEL->streams->printf("c_millimeters_of_travel = %f\r\n",c_millimeters_of_travel);
+
     // We ignore non-moves ( for example, extruder moves are not XYZ moves )
-    if( gcode->millimeters_of_travel < 1e-8F ) {
-        return;
+    if( gcode->millimeters_of_travel < 1e-8F && a_millimeters_of_travel < 1e-8F && b_millimeters_of_travel < 1e-8F && c_millimeters_of_travel < 1e-8F ) {
+        if(THEKERNEL->feedback->machine_state == 0) {
+        	THEKERNEL->feedback->flash_stat(1);
+        	THEKERNEL->feedback->flash_stat(0);
+        }
+    	return;
+    }
+    if(THEKERNEL->feedback->machine_state == 0) {
+    	THEKERNEL->feedback->flash_stat(1);
     }
 
     gcode->millimeters_of_travel = sqrtf(gcode->millimeters_of_travel);
+
+    a_millimeters_of_travel = sqrtf(a_millimeters_of_travel);
+	b_millimeters_of_travel = sqrtf(b_millimeters_of_travel);
+	c_millimeters_of_travel = sqrtf(c_millimeters_of_travel);
 
     // Mark the gcode as having a known distance
     this->distance_in_gcode_is_known( gcode );
@@ -719,10 +1008,14 @@ void Robot::append_line(Gcode *gcode, float target[], float rate_mm_s )
         }
     }
 
+    if( a_millimeters_of_travel > 0.0F || b_millimeters_of_travel > 0.0F || c_millimeters_of_travel > 0.0F ){
+		segments = 1;
+	}
+
     if (segments > 1) {
         // A vector to keep track of the endpoint of each segment
-        float segment_delta[3];
-        float segment_end[3];
+        float segment_delta[6];
+        float segment_end[6];
 
         // How far do we move each segment?
         for (int i = X_AXIS; i <= Z_AXIS; i++)
@@ -734,14 +1027,16 @@ void Robot::append_line(Gcode *gcode, float target[], float rate_mm_s )
             if(halted) return; // don;t queue any more segments
             for(int axis = X_AXIS; axis <= Z_AXIS; axis++ )
                 segment_end[axis] = last_milestone[axis] + segment_delta[axis];
+            for(int axis = A_AXIS; axis <= C_AXIS; axis++ )
+            	segment_end[axis] = last_milestone[axis];
 
             // Append the end of this segment to the queue
-            this->append_milestone(segment_end, rate_mm_s);
+            this->append_milestone(segment_end, rate_mm_s, a_rate_mm_s, b_rate_mm_s, c_rate_mm_s);
         }
     }
 
     // Append the end of this full move to the queue
-    this->append_milestone(target, rate_mm_s);
+    this->append_milestone(target, rate_mm_s, a_rate_mm_s, b_rate_mm_s, c_rate_mm_s);
 
     // if adding these blocks didn't start executing, do that now
     THEKERNEL->conveyor->ensure_running();
@@ -849,12 +1144,12 @@ void Robot::append_arc(Gcode *gcode, float target[], float offset[], float radiu
         arc_target[this->plane_axis_2] += linear_per_segment;
 
         // Append this segment to the queue
-        this->append_milestone(arc_target, this->feed_rate / seconds_per_minute);
+        this->append_milestone(arc_target, this->feed_rate / seconds_per_minute, this->a_feed_rate / seconds_per_minute, this->b_feed_rate / seconds_per_minute, this->c_feed_rate / seconds_per_minute );
 
     }
 
     // Ensure last segment arrives at target location.
-    this->append_milestone(target, this->feed_rate / seconds_per_minute);
+    this->append_milestone(target, this->feed_rate / seconds_per_minute, this->a_feed_rate / seconds_per_minute, this->b_feed_rate / seconds_per_minute, this->c_feed_rate / seconds_per_minute);
 }
 
 // Do the math for an arc and add it to the queue
@@ -899,11 +1194,17 @@ void Robot::select_plane(uint8_t axis_0, uint8_t axis_1, uint8_t axis_2)
 
 void Robot::clearToolOffset()
 {
-    memset(this->toolOffset, 0, sizeof(this->toolOffset));
+    //memset(this->toolOffset, 0, sizeof(this->toolOffset));
+	for(int i=0; i<3; i++) {
+		this->toolOffset[i] = 0.0F;
+	}
 }
 
-void Robot::setToolOffset(const float offset[3])
+void Robot::setToolOffset(const float offset[6])
 {
-    memcpy(this->toolOffset, offset, sizeof(this->toolOffset));
+    //memcpy(this->toolOffset, offset, sizeof(this->toolOffset));
+	for(int i=0; i<3; i++) {
+		this->toolOffset[i] = offset[i];
+	}
 }
 

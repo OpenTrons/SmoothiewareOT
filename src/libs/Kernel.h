@@ -31,6 +31,9 @@ class StepTicker;
 class Adc;
 class PublicData;
 
+class Feedback;
+class Endstops;
+
 class Kernel {
     public:
         Kernel();
@@ -46,6 +49,9 @@ class Kernel {
         SerialConsole*    serial;
         StreamOutputPool* streams;
 
+        Feedback*		  feedback;
+        Endstops*		  endstops;
+
         Robot*            robot;
         Stepper*          stepper;
         Planner*          planner;
@@ -60,6 +66,11 @@ class Kernel {
         bool              use_leds;
         std::string       current_path;
         int               base_stepping_frequency;
+
+        typedef struct {
+        	int			f_id;
+        	int32_t		f_current_position_steps;
+        } ID_POS;
 
     private:
         // When a module asks to be called for a specific event ( a hook ), this is where that request is remembered

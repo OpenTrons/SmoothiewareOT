@@ -10,6 +10,9 @@
 
 #include "libs/Hook.h"
 #include "Pin.h"
+#include "Kernel.h"
+#include "libs/StreamOutput.h"
+#include "StreamOutputPool.h"
 
 class StepTicker;
 class Hook;
@@ -18,6 +21,13 @@ class StepperMotor {
     public:
         StepperMotor();
         StepperMotor(Pin& step, Pin& dir, Pin& en);
+
+        typedef struct {
+			int			f_id;
+			int32_t		f_current_position_steps;
+		} ID_POS;
+
+		ID_POS id_pos;
 
 
         void step();
@@ -46,6 +56,11 @@ class StepperMotor {
         uint32_t get_steps_to_move() const { return steps_to_move; }
         uint32_t get_stepped() const { return stepped; }
 
+        void feedback_step_switch(bool is_on);
+        uint32_t feedback_step_tick( uint32_t dummy );
+
+        void set_id(int id) { id_pos.f_id = id; }
+
         template<typename T> void attach( T *optr, uint32_t ( T::*fptr )( uint32_t ) ){
             Hook* hook = new Hook();
             hook->attach(optr, fptr);
@@ -58,15 +73,30 @@ class StepperMotor {
             this->signal_step = true;
         }
 
+        template<typename T> void attach_feedback( T *optr, uint32_t (T::*fptr )( uint32_t ) ){
+        	Hook* hook = new Hook();
+        	hook->attach(optr, fptr);
+        	this->feedback_hook = hook;
+        	//THEKERNEL->streams->printf("attach_feedback\r\n");
+        }
+
         friend class StepTicker;
         friend class Stepper;
         friend class Planner;
         friend class Robot;
+        friend class Feedback;
+
 
     private:
         void init();
         Hook* end_hook;
         Hook* step_signal_hook;
+
+        Hook* feedback_hook;
+        bool send_feedback;
+        bool feedback_attached;
+        bool feedback_step_time;
+        int32_t last_step;
 
         uint32_t signal_step_number;
 

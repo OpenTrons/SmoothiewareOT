@@ -22,8 +22,14 @@ using namespace std;
 #include "Config.h"
 #include "libs/StreamOutputPool.h"
 #include "ConfigValue.h"
+#include "modules/robot/Feedback.h"
+#include "modules/tools/endstops/Endstops.h"
+#include "modules/robot/Robot.h"
+#include "SerialConsole.h"
 
 #define planner_queue_size_checksum CHECKSUM("planner_queue_size")
+
+#define DEBUG	0
 
 /*
  * The conveyor holds the queue of blocks, takes care of creating them, and starting the executing chain of blocks
@@ -57,6 +63,8 @@ Conveyor::Conveyor(){
     running = false;
     flush = false;
     halted= false;
+
+    delayed_flush = false;
 }
 
 void Conveyor::on_module_loaded(){
@@ -68,6 +76,7 @@ void Conveyor::on_module_loaded(){
 }
 
 void Conveyor::on_halt(void* argument){
+	if(DEBUG) { THEKERNEL->streams->printf("on_halt called\r\n"); }
     if(argument == nullptr) {
         halted= true;
         flush_queue();
@@ -159,6 +168,15 @@ void Conveyor::on_block_end(void* block)
     if (gc_pending == queue.head_i)
     {
         running = false;
+
+        if(THEKERNEL->feedback->machine_state != 4) {
+        	THEKERNEL->feedback->machine_state = 0;
+        } else {
+        	if(THEKERNEL->feedback->send_feedback) {
+        		THEKERNEL->streams->printf("***\r\n");
+        	}
+        }
+
         return;
     }
 
@@ -184,8 +202,16 @@ void Conveyor::queue_head_block()
 {
     // upstream caller will block on this until there is room in the queue
     while (queue.is_full()) {
+
+    	THEKERNEL->feedback->machine_state = 2;
+
         ensure_running();
         THEKERNEL->call_event(ON_IDLE, this);
+    }
+
+    if(delayed_flush) {
+    	delayed_flush = false;
+    	return; //TODO: see if this really works to bypass extra block in flush... or just screws things up.
     }
 
     if(halted) {
@@ -194,6 +220,8 @@ void Conveyor::queue_head_block()
         queue.head_ref()->clear();
 
     }else{
+    	THEKERNEL->feedback->machine_state = 3;
+
         queue.head_ref()->ready();
         queue.produce_head();
     }
@@ -207,6 +235,9 @@ void Conveyor::ensure_running()
             return;
 
         running = true;
+
+        THEKERNEL->feedback->machine_state = 1;
+
         queue.item_ref(gc_pending)->begin();
     }
 }
@@ -223,8 +254,10 @@ void Conveyor::ensure_running()
 
 void Conveyor::flush_queue()
 {
+	if(DEBUG) { THEKERNEL->streams->printf("flush_queue called\r\n"); }
     flush = true;
-    wait_for_empty_queue();
+    delayed_flush = true;
+	wait_for_empty_queue();
     flush = false;
 }
 

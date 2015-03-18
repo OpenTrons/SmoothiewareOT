@@ -364,7 +364,7 @@ void Extruder::on_gcode_execute(void *argument)
     // The mode is OFF by default, and SOLO or FOLLOW only if we need to extrude
     this->mode = OFF;
 
-    // Absolute/relative mode, globably modal affect all extruders whether enabled or not
+    // Absolute/relative mode, globally modal affect all extruders whether enabled or not
     if( gcode->has_m ) {
         switch(gcode->m) {
         case 17:
