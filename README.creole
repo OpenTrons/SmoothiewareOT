@@ -1,6 +1,6 @@
 ==Overview
 
-SmoothiewareABC is the Opentrons' fork of the Smoothieware project's Smoothie firmware. The primary difference is the ability to use three additional axes, A B and C, in straight line movements (G0 and G1), and an option to automatically send position and machine state data in JSON format using "M62" (on) and "M63" (off) commands.
+SmoothiewareABC is the Opentrons' fork of the Smoothieware project's Smoothie firmware. The primary difference is the ability to use three additional axes, A B and C, in straight line movements (G0 and G1), and an option to automatically send position and machine state data in JSON format (roughly 3x/sec) using "M62" (on) and "M63" (off) commands.
 
 **!!IMPORTANT** The code is still being developed and it is important that certain configuration settings be set correctly. Check the Opentrons folder within the ConfigSamples folder for recommended config files to use.
 
