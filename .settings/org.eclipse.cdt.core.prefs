@@ -1,9 +1,0 @@
-eclipse.preferences.version=1
-environment/project/cdt.managedbuild.toolchain.gnu.cross.base.1199428652/OSX/delimiter=\:
-environment/project/cdt.managedbuild.toolchain.gnu.cross.base.1199428652/OSX/operation=append
-environment/project/cdt.managedbuild.toolchain.gnu.cross.base.1199428652/OSX/value=/Users/nicholas/Documents/Github/SmoothiewareABC/build/osx64
-environment/project/cdt.managedbuild.toolchain.gnu.cross.base.1199428652/PATH/delimiter=\:
-environment/project/cdt.managedbuild.toolchain.gnu.cross.base.1199428652/PATH/operation=replace
-environment/project/cdt.managedbuild.toolchain.gnu.cross.base.1199428652/PATH/value=/bin\:/usr/bin\:/usr/sbin\:/sbin\:/usr/local/gcc-arm-none-eabi-4_8-2014q2/bin\:/usr/local/gcc-arm-none-eabi-4_8-2014q2/arm-none-eabi/bin
-environment/project/cdt.managedbuild.toolchain.gnu.cross.base.1199428652/append=true
-environment/project/cdt.managedbuild.toolchain.gnu.cross.base.1199428652/appendContributed=true
