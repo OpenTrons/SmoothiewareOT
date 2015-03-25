@@ -9,9 +9,9 @@ mm_per_line_segment                          0.2              # 5 Lines can be c
                                                               # coordinates robots ).
 
 # Arm solution configuration : Cartesian robot. Translates mm positions into stepper positions
-alpha_steps_per_mm                           80               # Steps per mm for alpha stepper
-beta_steps_per_mm                            80               # Steps per mm for beta stepper
-gamma_steps_per_mm                           1400             # 1600 Steps per mm for gamma stepper
+alpha_steps_per_mm                           79.2 #80               # Steps per mm for alpha stepper
+beta_steps_per_mm                            79.5 #80               # Steps per mm for beta stepper
+gamma_steps_per_mm                           1600                   # Steps per mm for gamma stepper
 
 # Planner module configuration : Look-ahead and acceleration configuration
 planner_queue_size                           32               # DO NOT CHANGE THIS UNLESS YOU KNOW EXACTLY WHAT YOU ARE DOING
@@ -346,9 +346,9 @@ psi_max_rate 190 #                          300
 #omega_en_pin                                nc
 #omega_max_rate                             300
 
-chi_steps_per_mm                            1400
-psi_steps_per_mm                            1400
-#omega_steps_per_mm                          1400
+chi_steps_per_mm                            1600
+psi_steps_per_mm                            1600
+#omega_steps_per_mm                          1600
 
 # opentrons settings - stepper
 acceleration_a_ticks_per_second             100
