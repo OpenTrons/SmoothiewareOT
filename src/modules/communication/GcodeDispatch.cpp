@@ -224,7 +224,7 @@ try_again:
                     } else {
                         new_message.stream->printf("ok\r\n");
                         if(THEKERNEL->feedback->machine_state==4) {
-                        	THEKERNEL->feedback->machine_state=0;
+                        	THEKERNEL->feedback->machine_state=5;
                         }
                     }
                     delete gcode;

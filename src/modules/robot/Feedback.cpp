@@ -33,7 +33,6 @@ Feedback::Feedback()
 		cumulative_steps[i] = cumulative_steps_last[i] = 0;
 		position[i] = position_last[i] = 0.0F;
 
-		//THEKERNEL->robot->actuators[i]->attach_feedback(this, &Feedback::feedback_pos );
 	}
 }
 
@@ -67,6 +66,13 @@ void Feedback::on_gcode_received(void *argument)
 
 			this->feedback_switch(true);
 			THEKERNEL->streams->printf("feedback engaged\r\n");
+			for(int i=0; i<6; i++) {
+				if(!THEKERNEL->robot->actuators[i]->moving){
+					float position = THEKERNEL->robot->actuators[i]->get_current_position();
+					this->cumulative_steps[i] = this->steps_per_mm[i] * position;
+					this->cumulative_steps_last[i] = this->cumulative_steps[i]-1;
+				}
+			}
 			gcode->mark_as_taken();
 		}
 		return;
@@ -103,14 +109,12 @@ void Feedback::feedback_switch(bool is_on)
 			THEKERNEL->robot->actuators[i]->attach_feedback(this, &Feedback::feedback_pos );
 		}
 
-		//THEKERNEL->slow_ticker->attach( 3, this, &Feedback::feedback_pos );
 		THEKERNEL->slow_ticker->attach( 3, this, &Feedback::feedback_tick );
 	}
 }
 
 uint32_t Feedback::feedback_pos( uint32_t value )
 {
-	//THEKERNEL->streams->printf("*\r\n");
 	ID_POS *id_pos = (ID_POS*)value;
 	this->cumulative_steps[id_pos->f_id] = id_pos->f_current_position_steps;
 
@@ -120,7 +124,6 @@ uint32_t Feedback::feedback_pos( uint32_t value )
 
 uint32_t Feedback::feedback_tick( uint32_t dummy )
 {
-	//THEKERNEL->streams->printf("*\r\n");
 	machine_state_ticker++;
 
 	if(DEBUG && machine_state_ticker < 2) {
@@ -138,13 +141,12 @@ uint32_t Feedback::feedback_tick( uint32_t dummy )
 
 		bool brace = false;
 
-		//THEKERNEL->streams->printf("{%i,%i,%i,%i,%i,%i}\r\n",cumulative_steps[0],cumulative_steps[1],cumulative_steps[2],cumulative_steps[3],cumulative_steps[4],cumulative_steps[5]);
 		for(int i=0; i<6; i++) {
 			if(this->cumulative_steps[i] != this->cumulative_steps_last[i]) {
-		//if(this->position[i] != this->position_last[i]) {
+
 				float position = ((float)this->cumulative_steps[i]/this->steps_per_mm[i]);
 				this->cumulative_steps_last[i] = this->cumulative_steps[i];
-			//this->position_last[i] = this->position[i];
+
 				if(!brace)
 					THEKERNEL->streams->printf("{");
 
@@ -156,7 +158,7 @@ uint32_t Feedback::feedback_tick( uint32_t dummy )
 					if(brace)
 						THEKERNEL->streams->printf(",");
 					THEKERNEL->streams->printf("\"%c\":%i.%u",'a'+(i-3), (int)position, (int)(position*1000)%1000);
-				}	//THEKERNEL->streams->printf("{%f,%f,%f,%f,%f,%f}\r\n",position[0], position[1], position[2], position[3], position[4], position[5]);
+				}
 				brace = true;
 			}
 		}
@@ -211,7 +213,23 @@ uint32_t Feedback::feedback_tick( uint32_t dummy )
 	return 0;
 }
 
-void Feedback::flash_stat(int state){
+void Feedback::flash_stat(int state)
+{
 	if(this->send_feedback)
 		THEKERNEL->streams->printf("{\"stat\":%i}\r\n", state);
+}
+
+void Feedback::finished_homing(char axes_to_move, char abc_axes_to_move)
+{
+	for ( int c = X_AXIS; c <= Z_AXIS; c++ ) {
+		if (  ( axes_to_move >> c ) & 1 ) {
+			this->cumulative_steps_last[c] = -9999;
+		}
+	}
+	for ( int c = A_AXIS; c <= C_AXIS; c++ ) {
+		if (  ( abc_axes_to_move >> (c-3) ) & 1 ) {
+			this->cumulative_steps_last[c] = -9999;
+		}
+	}
+	this->machine_state = 0;
 }

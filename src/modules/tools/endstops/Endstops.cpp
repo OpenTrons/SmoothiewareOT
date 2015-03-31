@@ -714,6 +714,7 @@ void Endstops::do_homing_cartesian(char axes_to_move, char abc_axes_to_move)
 
     // Homing is done
     this->status = NOT_HOMING;
+    THEKERNEL->feedback->finished_homing(axes_to_move, abc_axes_to_move);
 }
 
 void Endstops::wait_for_homed_corexy(int axis)

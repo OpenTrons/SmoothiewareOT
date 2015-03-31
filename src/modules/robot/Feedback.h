@@ -25,6 +25,7 @@ public:
 	void on_module_loaded();
 	void on_gcode_received(void *argument);
 	void flash_stat(int state);
+	void finished_homing(char axes_to_move, char abc_axes_to_move);
 
 	int machine_state;
 	int machine_state_ticker;
