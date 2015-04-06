@@ -16,8 +16,14 @@
 #include "libs/nuts_bolts.h"
 #include "modules/robot/robot.h"
 #include "libs/StepperMotor.h"
+#include "checksumm.h"
+#include "Config.h"
+#include "ConfigValue.h"
 
 #define DEBUG 0
+
+#define config_version_checksum						CHECKSUM("config_version")
+
 
 Feedback::Feedback()
 {
@@ -39,6 +45,12 @@ Feedback::Feedback()
 void Feedback::on_module_loaded()
 {
 	this->register_for_event(ON_GCODE_RECEIVED);
+}
+
+void Feedback::on_config_reload(void *argument)
+{
+	//is this even necessary for showing config version?... just issue "config-get sd version" command
+	this->config_version = THEKERNEL->config->value(config_version_checksum)->by_default("nc")->as_string();
 }
 
 void Feedback::on_gcode_received(void *argument)

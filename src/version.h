@@ -3,6 +3,7 @@
 class Version {
     public:
         const char *get_build(void) const;
+        const char *get_version(void) const;
         const char *get_build_date(void) const;
 };
 #endif

@@ -19,6 +19,7 @@
 #include "FileConfigSource.h"
 #include "ConfigValue.h"
 #include "ConfigCache.h"
+#include "modules/robot/Feedback.h"
 
 #define CONF_NONE       0
 #define CONF_ROM        1
@@ -61,6 +62,10 @@ void Configurator::config_get_command( string parameters, StreamOutput *stream )
 {
     string source = shift_parameter(parameters);
     string setting = shift_parameter(parameters);
+    if(source.empty() || setting.empty()) {
+		stream->printf( "Usage: config-get source setting value # where source is sd, setting is the key\r\n" );
+		return;
+	}
     if (setting == "") { // output settings from the config-cache
         setting = source;
         source = "";
@@ -70,9 +75,18 @@ void Configurator::config_get_command( string parameters, StreamOutput *stream )
         ConfigValue *cv = THEKERNEL->config->value(setting_checksums);
         if(cv != NULL && cv->found) {
             string value = cv->as_string();
-            stream->printf( "cached: %s is set to %s\r\n", setting.c_str(), value.c_str() );
+            if( THEKERNEL->feedback->send_feedback ) {
+            	stream->printf( "{\"%s\":%s}\r\n", setting.c_str(), value.c_str() );
+            } else {
+            	stream->printf( "cached: %s is set to %s\r\n", setting.c_str(), value.c_str() );
+            }
+
         } else {
-            stream->printf( "cached: %s is not in config\r\n", setting.c_str());
+        	if( THEKERNEL->feedback->send_feedback ) {
+				stream->printf( "{\"%s\":na}\r\n", setting.c_str());
+			} else {
+				stream->printf( "cached: %s is not in config\r\n", setting.c_str());
+			}
         }
         THEKERNEL->config->config_cache_clear();
 
@@ -84,10 +98,18 @@ void Configurator::config_get_command( string parameters, StreamOutput *stream )
             if( THEKERNEL->config->config_sources[i]->is_named(source_checksum) ) {
                 string value = THEKERNEL->config->config_sources[i]->read(setting_checksums);
                 if(value.empty()) {
-                    stream->printf( "%s: %s is not in config\r\n", source.c_str(), setting.c_str() );
-                } else {
-                    stream->printf( "%s: %s is set to %s\r\n", source.c_str(), setting.c_str(), value.c_str() );
-                }
+                	if( THEKERNEL->feedback->send_feedback ) {
+						stream->printf( "{\"source\":\"%s\",\"%s\":na}\r\n", source.c_str(), setting.c_str() );
+					} else {
+						stream->printf( "%s: %s is not in config\r\n", source.c_str(), setting.c_str() );
+					}
+				} else {
+					if( THEKERNEL->feedback->send_feedback ) {
+						stream->printf( "{\"source\":%s,\"%s\":%s}\r\n", source.c_str(), setting.c_str(), value.c_str() );
+					} else {
+						stream->printf( "%s: %s is set to %s\r\n", source.c_str(), setting.c_str(), value.c_str() );
+					}
+				}
                 break;
             }
         }

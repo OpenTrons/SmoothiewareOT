@@ -40,6 +40,7 @@ private:
     static void reset_command(string parameters, StreamOutput *stream );
     static void dfu_command(string parameters, StreamOutput *stream );
     static void help_command(string parameters, StreamOutput *stream );
+    static void build_command(string paramers, StreamOutput *stream );
     static void version_command(string parameters, StreamOutput *stream );
     static void get_command(string parameters, StreamOutput *stream );
     static void set_temp_command(string parameters, StreamOutput *stream );

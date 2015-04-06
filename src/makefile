@@ -45,10 +45,17 @@ endif
 
 # generate a git version string, sorry only on linux and mac osx
 ifneq "$(OS)" "Windows_NT"
+DEFINES += -D__GITBUILDSTRING__=\"$(shell ./generate-build.sh)\"
+else
+DEFINES += -D__GITBUILDSTRING__=\"$(shell generate-build.bat)\"
+endif
+
+ifneq "$(OS)" "Windows_NT"
 DEFINES += -D__GITVERSIONSTRING__=\"$(shell ./generate-version.sh)\"
 else
 DEFINES += -D__GITVERSIONSTRING__=\"$(shell generate-version.bat)\"
 endif
+
 
 # use c++11 features for the checksums and set default baud rate for serial uart
 DEFINES += -DCHECKSUM_USE_CPP -DDEFAULT_SERIAL_BAUD_RATE=$(DEFAULT_SERIAL_BAUD_RATE)

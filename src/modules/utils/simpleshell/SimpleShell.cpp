@@ -57,6 +57,7 @@ const SimpleShell::ptentry_t SimpleShell::commands_table[] = {
     {"break",    SimpleShell::break_command},
     {"help",     SimpleShell::help_command},
     {"?",        SimpleShell::help_command},
+	{"build",	 SimpleShell::build_command},
     {"version",  SimpleShell::version_command},
     {"mem",      SimpleShell::mem_command},
     {"get",      SimpleShell::get_command},
@@ -510,8 +511,15 @@ void SimpleShell::net_command( string parameters, StreamOutput *stream)
     }
 }
 
-// print out build version
+// print out version
 void SimpleShell::version_command( string parameters, StreamOutput *stream)
+{
+    Version vers;
+    stream->printf("{\"version\":%s}\r\n", vers.get_version());
+}
+
+// print out build version
+void SimpleShell::build_command( string parameters, StreamOutput *stream)
 {
     Version vers;
     uint32_t dev = getDeviceType();

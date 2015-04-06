@@ -23,6 +23,7 @@ public:
 	uint32_t feedback_pos( uint32_t value );
 
 	void on_module_loaded();
+	void on_config_reload(void *argument);
 	void on_gcode_received(void *argument);
 	void flash_stat(int state);
 	void finished_homing(char axes_to_move, char abc_axes_to_move);
@@ -40,6 +41,7 @@ public:
 	float steps_per_mm[6];
 
 	bool send_feedback;
+	std::string config_version;
 
 	typedef struct {
 		int			f_id;
