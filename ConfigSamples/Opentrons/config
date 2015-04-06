@@ -1,5 +1,6 @@
 # NOTE Lines must not exceed 132 characters
 # Robot module configurations : general handling of movement G-codes and slicing into moves
+version                                      v1.0.2           # Version of this file
 default_feed_rate                            3000             # Default rate ( mm/minute ) for G1/G2/G3 moves
 default_seek_rate                            3000             # Default rate ( mm/minute ) for G0 moves
 mm_per_arc_segment                           0.5              # Arcs are cut into segments ( lines ), this is the length for
@@ -11,7 +12,7 @@ mm_per_line_segment                          0.2              # 5 Lines can be c
 # Arm solution configuration : Cartesian robot. Translates mm positions into stepper positions
 alpha_steps_per_mm                           79.2 #80               # Steps per mm for alpha stepper
 beta_steps_per_mm                            79.5 #80               # Steps per mm for beta stepper
-gamma_steps_per_mm                           1068.7	  #1600             # Steps per mm for gamma stepper
+gamma_steps_per_mm                           1600                   # Steps per mm for gamma stepper
 
 # Planner module configuration : Look-ahead and acceleration configuration
 planner_queue_size                           32               # DO NOT CHANGE THIS UNLESS YOU KNOW EXACTLY WHAT YOU ARE DOING
@@ -357,7 +358,7 @@ acceleration_b_ticks_per_second             100
 
 # opentrons settings - endstops
 chi_min_endstop                             1.25^!
-psi_min_endstop                              nc     #1.27^!
+psi_min_endstop                             1.27^!
 #omega_min_endstop                           nc
 
 chi_max_endstop                             1.25^!
