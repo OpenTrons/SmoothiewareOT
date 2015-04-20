@@ -26,7 +26,7 @@ void SwitchPool::load_tools()
 
     for( unsigned int i = 0; i < modules.size(); i++ ) {
         // If module is enabled
-        if( THEKERNEL->config->value(switch_checksum, modules[i], enable_checksum )->as_bool() == true ) {
+        if( THEKERNEL->config->value(switch_checksum, modules[i], enable_checksum )->by_default(false)->as_bool() == true ) {
             Switch *controller = new Switch(modules[i]);
             THEKERNEL->add_module(controller);
         }

@@ -24,7 +24,7 @@ class ConfigCache {
 
         void add(ConfigValue* v);
 
-        // lookup and return the entru that matches the check sums,return NULL if not found
+        // lookup and return the entry that matches the check sums, return NULL if not found
         ConfigValue *lookup(const uint16_t *check_sums) const;
 
         // collect enabled checksums of the given family

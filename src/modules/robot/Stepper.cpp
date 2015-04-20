@@ -92,13 +92,13 @@ void Stepper::on_module_loaded()
 void Stepper::on_config_reload(void *argument)
 {
 
-    this->acceleration_ticks_per_second =  THEKERNEL->config->value(acceleration_ticks_per_second_checksum)->by_default(100   )->as_number();
+    this->acceleration_ticks_per_second =  THEKERNEL->config->value(acceleration_ticks_per_second_checksum)->by_default(1600   )->as_number();
 
-    this->a_acceleration_ticks_per_second =  THEKERNEL->config->value(a_acceleration_ticks_per_second_checksum)->by_default(1000   )->as_number();
-    this->b_acceleration_ticks_per_second =  THEKERNEL->config->value(b_acceleration_ticks_per_second_checksum)->by_default(1000   )->as_number();
-    this->c_acceleration_ticks_per_second =  THEKERNEL->config->value(c_acceleration_ticks_per_second_checksum)->by_default(1000   )->as_number();
+    this->a_acceleration_ticks_per_second =  THEKERNEL->config->value(a_acceleration_ticks_per_second_checksum)->by_default(1600   )->as_number();
+    this->b_acceleration_ticks_per_second =  THEKERNEL->config->value(b_acceleration_ticks_per_second_checksum)->by_default(1600   )->as_number();
+    this->c_acceleration_ticks_per_second =  THEKERNEL->config->value(c_acceleration_ticks_per_second_checksum)->by_default(1600   )->as_number();
 
-    this->minimum_steps_per_second      =  THEKERNEL->config->value(minimum_steps_per_minute_checksum     )->by_default(3000  )->as_number() / 60.0F;
+    this->minimum_steps_per_second      =  THEKERNEL->config->value(minimum_steps_per_minute_checksum     )->by_default(1200  )->as_number() / 60.0F;
 
     // Steppers start off by default
     this->turn_enable_pins_off();

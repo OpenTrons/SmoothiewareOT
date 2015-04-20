@@ -93,6 +93,7 @@ Extruder::Extruder( uint16_t config_identifier, bool single )
 void Extruder::on_halt(void *arg)
 {
     if(arg == nullptr) {
+
         // turn off motor
         this->en_pin.set(1);
         // disable if multi extruder

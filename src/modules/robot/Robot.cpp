@@ -56,10 +56,6 @@ using std::string;
 #define  y_axis_max_speed_checksum           CHECKSUM("y_axis_max_speed")
 #define  z_axis_max_speed_checksum           CHECKSUM("z_axis_max_speed")
 
-#define  a_axis_max_speed_checksum           CHECKSUM("a_axis_max_speed")
-#define  b_axis_max_speed_checksum           CHECKSUM("b_axis_max_speed")
-#define  c_axis_max_speed_checksum           CHECKSUM("c_axis_max_speed")
-
 // arm solutions
 #define  arm_solution_checksum               CHECKSUM("arm_solution")
 #define  cartesian_checksum                  CHECKSUM("cartesian")
@@ -178,6 +174,8 @@ void Robot::on_module_loaded()
     this->register_for_event(ON_GET_PUBLIC_DATA);
     this->register_for_event(ON_SET_PUBLIC_DATA);
     this->register_for_event(ON_HALT);
+    this->register_for_event(ON_THE_FLY_GET);
+    this->register_for_event(ON_THE_FLY_SET);
 
     // Configuration
     this->on_config_reload(this);
@@ -230,7 +228,7 @@ void Robot::on_config_reload(void *argument)
     this->default_seek_rates[2] = this->b_seek_rate;
     this->default_seek_rates[3] = this->c_seek_rate;
 
-    this->mm_per_line_segment = THEKERNEL->config->value(mm_per_line_segment_checksum )->by_default(    0.0F)->as_number();
+    this->mm_per_line_segment = THEKERNEL->config->value(mm_per_line_segment_checksum )->by_default(    5.0F)->as_number();
     this->delta_segments_per_second = THEKERNEL->config->value(delta_segments_per_second_checksum )->by_default(0.0f   )->as_number();
     this->mm_per_arc_segment  = THEKERNEL->config->value(mm_per_arc_segment_checksum  )->by_default(    0.5f)->as_number();
     this->arc_correction      = THEKERNEL->config->value(arc_correction_checksum      )->by_default(    5   )->as_number();
@@ -259,34 +257,54 @@ void Robot::on_config_reload(void *argument)
 	Pin omega_dir_pin;
 	Pin omega_en_pin;
 
-    alpha_step_pin.from_string( THEKERNEL->config->value(alpha_step_pin_checksum )->by_default("2.0"  )->as_string())->as_output();
-    alpha_dir_pin.from_string(  THEKERNEL->config->value(alpha_dir_pin_checksum  )->by_default("0.5!" )->as_string())->as_output();
-    alpha_en_pin.from_string(   THEKERNEL->config->value(alpha_en_pin_checksum   )->by_default("0.4"  )->as_string())->as_output();
-    beta_step_pin.from_string(  THEKERNEL->config->value(beta_step_pin_checksum  )->by_default("2.1"  )->as_string())->as_output();
-    beta_dir_pin.from_string(   THEKERNEL->config->value(beta_dir_pin_checksum   )->by_default("0.11!")->as_string())->as_output();
-    beta_en_pin.from_string(    THEKERNEL->config->value(beta_en_pin_checksum    )->by_default("0.10" )->as_string())->as_output();
-    gamma_step_pin.from_string( THEKERNEL->config->value(gamma_step_pin_checksum )->by_default("2.2"  )->as_string())->as_output();
-    gamma_dir_pin.from_string(  THEKERNEL->config->value(gamma_dir_pin_checksum  )->by_default("0.20" )->as_string())->as_output();
-    gamma_en_pin.from_string(   THEKERNEL->config->value(gamma_en_pin_checksum   )->by_default("0.19" )->as_string())->as_output();
+	string alpha_step_pin_str = THEKERNEL->config->value(alpha_step_pin_checksum )->by_default("2.0"  )->as_string();
+	string alpha_dir_pin_str  = THEKERNEL->config->value(alpha_dir_pin_checksum  )->by_default("0.5!" )->as_string();
+	string alpha_en_pin_str   = THEKERNEL->config->value(alpha_en_pin_checksum   )->by_default("0.4"  )->as_string();
+	string beta_step_pin_str  = THEKERNEL->config->value(beta_step_pin_checksum  )->by_default("2.1"  )->as_string();
+	string beta_dir_pin_str   = THEKERNEL->config->value(beta_dir_pin_checksum   )->by_default("0.11!")->as_string();
+	string beta_en_pin_str    = THEKERNEL->config->value(beta_en_pin_checksum    )->by_default("0.10" )->as_string();
+	string gamma_step_pin_str = THEKERNEL->config->value(gamma_step_pin_checksum )->by_default("2.2"  )->as_string();
+	string gamma_dir_pin_str  = THEKERNEL->config->value(gamma_dir_pin_checksum  )->by_default("0.20" )->as_string();
+	string gamma_en_pin_str   = THEKERNEL->config->value(gamma_en_pin_checksum   )->by_default("0.19" )->as_string();
 
-    chi_step_pin.from_string(   THEKERNEL->config->value(chi_step_pin_checksum   )->by_default("2.3"  )->as_string())->as_output();
-    chi_dir_pin.from_string(    THEKERNEL->config->value(chi_dir_pin_checksum    )->by_default("0.22" )->as_string())->as_output();
-    chi_en_pin.from_string(     THEKERNEL->config->value(chi_en_pin_checksum     )->by_default("0.21" )->as_string())->as_output();
-    psi_step_pin.from_string(   THEKERNEL->config->value(psi_step_pin_checksum   )->by_default("2.8"  )->as_string())->as_output();
-    psi_dir_pin.from_string(    THEKERNEL->config->value(psi_dir_pin_checksum    )->by_default("2.13" )->as_string())->as_output();
-    psi_en_pin.from_string(     THEKERNEL->config->value(psi_en_pin_checksum     )->by_default("4.29" )->as_string())->as_output();
-    omega_step_pin.from_string( THEKERNEL->config->value(omega_step_pin_checksum )->by_default("nc"   )->as_string())->as_output();
-    omega_dir_pin.from_string(  THEKERNEL->config->value(omega_dir_pin_checksum  )->by_default("nc"   )->as_string())->as_output();
-    omega_en_pin.from_string(   THEKERNEL->config->value(omega_en_pin_checksum   )->by_default("nc"   )->as_string())->as_output();
+	string chi_step_pin_str   = THEKERNEL->config->value(chi_step_pin_checksum   )->by_default("2.3"  )->as_string();
+	string chi_dir_pin_str    = THEKERNEL->config->value(chi_dir_pin_checksum    )->by_default("0.22" )->as_string();
+	string chi_en_pin_str     = THEKERNEL->config->value(chi_en_pin_checksum     )->by_default("0.21" )->as_string();
+	string psi_step_pin_str   = THEKERNEL->config->value(psi_step_pin_checksum   )->by_default("2.8"  )->as_string();
+	string psi_dir_pin_str    = THEKERNEL->config->value(psi_dir_pin_checksum    )->by_default("2.13" )->as_string();
+	string psi_en_pin_str     = THEKERNEL->config->value(psi_en_pin_checksum     )->by_default("4.29" )->as_string();
+	string omega_step_pin_str = THEKERNEL->config->value(omega_step_pin_checksum )->by_default("nc"   )->as_string();
+	string omega_dir_pin_str  = THEKERNEL->config->value(omega_dir_pin_checksum  )->by_default("nc"   )->as_string();
+	string omega_en_pin_str   = THEKERNEL->config->value(omega_en_pin_checksum   )->by_default("nc"   )->as_string();
+
+    alpha_step_pin.from_string( alpha_step_pin_str)->as_output();
+    alpha_dir_pin.from_string(  alpha_dir_pin_str)->as_output();
+    alpha_en_pin.from_string(   alpha_en_pin_str)->as_output();
+    beta_step_pin.from_string(  beta_step_pin_str)->as_output();
+    beta_dir_pin.from_string(   beta_dir_pin_str)->as_output();
+    beta_en_pin.from_string(    beta_en_pin_str)->as_output();
+    gamma_step_pin.from_string( gamma_step_pin_str)->as_output();
+    gamma_dir_pin.from_string(  gamma_dir_pin_str)->as_output();
+    gamma_en_pin.from_string(   gamma_en_pin_str)->as_output();
+
+    chi_step_pin.from_string(   chi_step_pin_str)->as_output();
+    chi_dir_pin.from_string(    chi_dir_pin_str)->as_output();
+    chi_en_pin.from_string(     chi_en_pin_str)->as_output();
+    psi_step_pin.from_string(   psi_step_pin_str)->as_output();
+    psi_dir_pin.from_string(    psi_dir_pin_str)->as_output();
+    psi_en_pin.from_string(     psi_en_pin_str)->as_output();
+    omega_step_pin.from_string( omega_step_pin_str)->as_output();
+    omega_dir_pin.from_string(  omega_dir_pin_str)->as_output();
+    omega_en_pin.from_string(   omega_en_pin_str)->as_output();
 
 
     float steps_per_mm[6] = {
-        THEKERNEL->config->value(alpha_steps_per_mm_checksum)->by_default(  80.0F)->as_number(),
-        THEKERNEL->config->value(beta_steps_per_mm_checksum )->by_default(  80.0F)->as_number(),
-        THEKERNEL->config->value(gamma_steps_per_mm_checksum)->by_default(1050.0F)->as_number(),
-        THEKERNEL->config->value(chi_steps_per_mm_checksum)->by_default(  1400.0F)->as_number(),
-        THEKERNEL->config->value(psi_steps_per_mm_checksum)->by_default(  1400.0F)->as_number(),
-        THEKERNEL->config->value(omega_steps_per_mm_checksum)->by_default(1400.0F)->as_number()
+        THEKERNEL->config->value(alpha_steps_per_mm_checksum)->by_default(  79.2F)->as_number(),
+        THEKERNEL->config->value(beta_steps_per_mm_checksum )->by_default(  79.5F)->as_number(),
+        THEKERNEL->config->value(gamma_steps_per_mm_checksum)->by_default(1068.7F)->as_number(),
+        THEKERNEL->config->value(chi_steps_per_mm_checksum)->by_default(  1600.0F)->as_number(),
+        THEKERNEL->config->value(psi_steps_per_mm_checksum)->by_default(  1600.0F)->as_number(),
+        THEKERNEL->config->value(omega_steps_per_mm_checksum)->by_default(1600.0F)->as_number()
     };
 
     for(int i=0; i<6; i++) {
@@ -313,11 +331,11 @@ void Robot::on_config_reload(void *argument)
 
     alpha_stepper_motor->max_rate = THEKERNEL->config->value(alpha_max_rate_checksum)->by_default(30000.0F)->as_number() / 60.0F;
     beta_stepper_motor->max_rate  = THEKERNEL->config->value(beta_max_rate_checksum )->by_default(30000.0F)->as_number() / 60.0F;
-    gamma_stepper_motor->max_rate = THEKERNEL->config->value(gamma_max_rate_checksum)->by_default(20000.0F)->as_number() / 60.0F;
+    gamma_stepper_motor->max_rate = THEKERNEL->config->value(gamma_max_rate_checksum)->by_default(1200.0F)->as_number() / 60.0F;
 
-    chi_stepper_motor->max_rate   = THEKERNEL->config->value(chi_max_rate_checksum  )->by_default(10000.0F)->as_number() / 60.0F;
-    psi_stepper_motor->max_rate   = THEKERNEL->config->value(psi_max_rate_checksum  )->by_default(10000.0F)->as_number() / 60.0F;
-    omega_stepper_motor->max_rate = THEKERNEL->config->value(omega_max_rate_checksum)->by_default(10000.0F)->as_number() / 60.0F;
+    chi_stepper_motor->max_rate   = THEKERNEL->config->value(chi_max_rate_checksum  )->by_default(190.0F)->as_number() / 60.0F;
+    psi_stepper_motor->max_rate   = THEKERNEL->config->value(psi_max_rate_checksum  )->by_default(190.0F)->as_number() / 60.0F;
+    omega_stepper_motor->max_rate = THEKERNEL->config->value(omega_max_rate_checksum)->by_default(190.0F)->as_number() / 60.0F;
 
     check_max_actuator_speeds(); // check the configs are sane
 
@@ -439,6 +457,240 @@ void Robot::on_set_public_data(void *argument)
 
         pdr->set_taken();
     }
+}
+
+void Robot::on_the_fly_get(void* argument)
+{
+	if(DEBUG) THEKERNEL->streams->printf("Robot::on_the_fly_get() called\r\n");
+
+	PublicDataRequest *pdr = static_cast<PublicDataRequest *>(argument);
+
+	if(pdr->starts_with(robot_checksum)){
+		if(pdr->second_element_is(0) && pdr->third_element_is(0)){
+			THEKERNEL->streams->printf("{\"default_feed_rate\":%f}\r\n",this->feed_rate);
+			THEKERNEL->streams->printf("{\"a_feed_rate\":%f}\r\n",this->a_feed_rate);
+			THEKERNEL->streams->printf("{\"b_feed_rate\":%f}\r\n",this->b_feed_rate);
+			THEKERNEL->streams->printf("{\"c_feed_rate\":%f}\r\n",this->c_feed_rate);
+			THEKERNEL->streams->printf("{\"default_seek_rate\":%f}\r\n",this->seek_rate);
+			THEKERNEL->streams->printf("{\"a_seek_rate\":%f}\r\n",this->a_seek_rate);
+			THEKERNEL->streams->printf("{\"b_seek_rate\":%f}\r\n",this->b_seek_rate);
+			THEKERNEL->streams->printf("{\"c_seek_rate\":%f}\r\n",this->c_seek_rate);
+			THEKERNEL->streams->printf("{\"mm_per_line_segment\":%f}\r\n",this->mm_per_line_segment);
+			THEKERNEL->streams->printf("{\"delta_segments_per_second\":%f}\r\n",this->delta_segments_per_second);
+			THEKERNEL->streams->printf("{\"mm_per_arc_segment\":%f}\r\n",this->mm_per_arc_segment);
+			THEKERNEL->streams->printf("{\"arc_correction\":%i}\r\n",this->arc_correction);
+			THEKERNEL->streams->printf("{\"x_axis_max_speed\":%f}\r\n",this->max_speeds[X_AXIS]);
+			THEKERNEL->streams->printf("{\"y_axis_max_speed\":%f}\r\n",this->max_speeds[Y_AXIS]);
+			THEKERNEL->streams->printf("{\"z_axis_max_speed\":%f}\r\n",this->max_speeds[Z_AXIS]);
+			/* TODO: maybe... pin to string, instead of saving all the strings??? inverse of Pin::from_string()
+			 * Pins are created here to create steppermotors and are then destroyed, so the real place
+			 * for the change in with the steppermotors.
+			 */
+			THEKERNEL->streams->printf("{\"alpha_steps_per_mm\":%f}\r\n",alpha_stepper_motor->get_steps_per_mm());
+			THEKERNEL->streams->printf("{\"beta_steps_per_mm\":%f}\r\n",beta_stepper_motor->get_steps_per_mm());
+			THEKERNEL->streams->printf("{\"gamma_steps_per_mm\":%f}\r\n",gamma_stepper_motor->get_steps_per_mm());
+			THEKERNEL->streams->printf("{\"chi_steps_per_mm\":%f}\r\n",chi_stepper_motor->get_steps_per_mm());
+			THEKERNEL->streams->printf("{\"psi_steps_per_mm\":%f}\r\n",psi_stepper_motor->get_steps_per_mm());
+			THEKERNEL->streams->printf("{\"omega_steps_per_mm\":%f}\r\n",omega_stepper_motor->get_steps_per_mm());
+			THEKERNEL->streams->printf("{\"alpha_max_rate\":%f}\r\n",alpha_stepper_motor->max_rate*60.0F);
+			THEKERNEL->streams->printf("{\"beta_max_rate\":%f}\r\n",beta_stepper_motor->max_rate*60.0F);
+			THEKERNEL->streams->printf("{\"gamma_max_rate\":%f}\r\n",gamma_stepper_motor->max_rate*60.0F);
+			THEKERNEL->streams->printf("{\"chi_max_rate\":%f}\r\n",chi_stepper_motor->max_rate*60.0F);
+			THEKERNEL->streams->printf("{\"psi_max_rate\":%f}\r\n",psi_stepper_motor->max_rate*60.0F);
+			THEKERNEL->streams->printf("{\"omega_max_rate\":%f}\r\n",omega_stepper_motor->max_rate*60.0F);
+			pdr->set_taken();
+		}
+	} else if(pdr->starts_with(default_feed_rate_checksum)){
+		THEKERNEL->streams->printf("{\"default_feed_rate\":%f}\r\n",this->feed_rate);
+		pdr->set_taken();
+	} else if(pdr->starts_with(a_default_feed_rate_checksum)){
+		THEKERNEL->streams->printf("{\"a_feed_rate\":%f}\r\n",this->a_feed_rate);
+		pdr->set_taken();
+	} else if(pdr->starts_with(b_default_feed_rate_checksum)){
+		THEKERNEL->streams->printf("{\"b_feed_rate\":%f}\r\n",this->b_feed_rate);
+		pdr->set_taken();
+	} else if(pdr->starts_with(c_default_feed_rate_checksum)){
+		THEKERNEL->streams->printf("{\"c_feed_rate\":%f}\r\n",this->c_feed_rate);
+		pdr->set_taken();
+
+	} else if(pdr->starts_with(default_seek_rate_checksum)){
+		THEKERNEL->streams->printf("{\"default_seek_rate\":%f}\r\n",this->seek_rate);
+		pdr->set_taken();
+	} else if(pdr->starts_with(a_default_seek_rate_checksum)){
+		THEKERNEL->streams->printf("{\"a_seek_rate\":%f}\r\n",this->a_seek_rate);
+		pdr->set_taken();
+	} else if(pdr->starts_with(b_default_seek_rate_checksum)){
+		THEKERNEL->streams->printf("{\"b_seek_rate\":%f}\r\n",this->b_seek_rate);
+		pdr->set_taken();
+	} else if(pdr->starts_with(c_default_seek_rate_checksum)){
+		THEKERNEL->streams->printf("{\"c_seek_rate\":%f}\r\n",this->c_seek_rate);
+		pdr->set_taken();
+
+	} else if(pdr->starts_with(mm_per_line_segment_checksum)){
+		THEKERNEL->streams->printf("{\"mm_per_line_segment\":%f}\r\n",this->mm_per_line_segment);
+		pdr->set_taken();
+	} else if(pdr->starts_with(delta_segments_per_second_checksum)){
+		THEKERNEL->streams->printf("{\"delta_segments_per_second\":%f}\r\n",this->delta_segments_per_second);
+		pdr->set_taken();
+	} else if(pdr->starts_with(mm_per_arc_segment_checksum)){
+		THEKERNEL->streams->printf("{\"mm_per_arc_segment\":%f}\r\n",this->mm_per_arc_segment);
+		pdr->set_taken();
+	} else if(pdr->starts_with(arc_correction_checksum)){
+		THEKERNEL->streams->printf("{\"arc_correction\":%i}\r\n",this->arc_correction);
+		pdr->set_taken();
+
+	} else if(pdr->starts_with(x_axis_max_speed_checksum)){
+		THEKERNEL->streams->printf("{\"x_axis_max_speed\":%f}\r\n",this->max_speeds[X_AXIS]);
+		pdr->set_taken();
+	} else if(pdr->starts_with(y_axis_max_speed_checksum)){
+		THEKERNEL->streams->printf("{\"y_axis_max_speed\":%f}\r\n",this->max_speeds[Y_AXIS]);
+		pdr->set_taken();
+	} else if(pdr->starts_with(z_axis_max_speed_checksum)){
+		THEKERNEL->streams->printf("{\"z_axis_max_speed\":%f}\r\n",this->max_speeds[Z_AXIS]);
+		pdr->set_taken();
+
+	} else if(pdr->starts_with(alpha_steps_per_mm_checksum)){
+		THEKERNEL->streams->printf("{\"alpha_steps_per_mm\":%f}\r\n",alpha_stepper_motor->get_steps_per_mm());
+		pdr->set_taken();
+	} else if(pdr->starts_with(beta_steps_per_mm_checksum)){
+		THEKERNEL->streams->printf("{\"beta_steps_per_mm\":%f}\r\n",beta_stepper_motor->get_steps_per_mm());
+		pdr->set_taken();
+	} else if(pdr->starts_with(gamma_steps_per_mm_checksum)){
+		THEKERNEL->streams->printf("{\"gamma_steps_per_mm\":%f}\r\n",gamma_stepper_motor->get_steps_per_mm());
+		pdr->set_taken();
+	} else if(pdr->starts_with(chi_steps_per_mm_checksum)){
+		THEKERNEL->streams->printf("{\"chi_steps_per_mm\":%f}\r\n",chi_stepper_motor->get_steps_per_mm());
+		pdr->set_taken();
+	} else if(pdr->starts_with(psi_steps_per_mm_checksum)){
+		THEKERNEL->streams->printf("{\"psi_steps_per_mm\":%f}\r\n",psi_stepper_motor->get_steps_per_mm());
+		pdr->set_taken();
+	} else if(pdr->starts_with(omega_steps_per_mm_checksum)){
+		THEKERNEL->streams->printf("{\"omega_steps_per_mm\":%f}\r\n",omega_stepper_motor->get_steps_per_mm());
+		pdr->set_taken();
+
+	} else if(pdr->starts_with(alpha_max_rate_checksum)){
+		THEKERNEL->streams->printf("{\"alpha_max_rate\":%f}\r\n",alpha_stepper_motor->max_rate*60.0F);
+		pdr->set_taken();
+	} else if(pdr->starts_with(beta_max_rate_checksum)){
+		THEKERNEL->streams->printf("{\"beta_max_rate\":%f}\r\n",beta_stepper_motor->max_rate*60.0F);
+		pdr->set_taken();
+	} else if(pdr->starts_with(gamma_max_rate_checksum)){
+		THEKERNEL->streams->printf("{\"gamma_max_rate\":%f}\r\n",gamma_stepper_motor->max_rate*60.0F);
+		pdr->set_taken();
+	} else if(pdr->starts_with(chi_max_rate_checksum)){
+		THEKERNEL->streams->printf("{\"chi_max_rate\":%f}\r\n",chi_stepper_motor->max_rate*60.0F);
+		pdr->set_taken();
+	} else if(pdr->starts_with(psi_max_rate_checksum)){
+		THEKERNEL->streams->printf("{\"psi_max_rate\":%f}\r\n",psi_stepper_motor->max_rate*60.0F);
+		pdr->set_taken();
+	} else if(pdr->starts_with(omega_max_rate_checksum)){
+		THEKERNEL->streams->printf("{\"omega_max_rate\":%f}\r\n",omega_stepper_motor->max_rate*60.0F);
+		pdr->set_taken();
+	}
+}
+
+void Robot::on_the_fly_set(void* argument)
+{
+	if(DEBUG) THEKERNEL->streams->printf("Robot::on_the_fly_set() called\r\n");
+
+	PublicDataRequest *pdr = static_cast<PublicDataRequest *>(argument);
+
+	if(pdr->starts_with(default_feed_rate_checksum)){
+		//this->feed_rate = *static_cast<float *>(pdr->get_data_ptr());
+		float fake_feed_rate = *static_cast<float *>(pdr->get_data_ptr());
+		if(DEBUG) THEKERNEL->streams->printf("default_feed_rate: %f\r\n", fake_feed_rate);
+		pdr->set_taken();
+	} else if(pdr->starts_with(a_default_feed_rate_checksum)){
+		//this->a_feed_rate = *static_cast<float *>(pdr->get_data_ptr());
+		float fake_a_feed_rate = *static_cast<float *>(pdr->get_data_ptr());
+		if(DEBUG) THEKERNEL->streams->printf("default_feed_rate: %f\r\n", fake_a_feed_rate);
+		pdr->set_taken();
+	} else if(pdr->starts_with(b_default_feed_rate_checksum)){
+		this->b_feed_rate = *static_cast<float *>(pdr->get_data_ptr());
+		pdr->set_taken();
+	} else if(pdr->starts_with(c_default_feed_rate_checksum)){
+		this->c_feed_rate = *static_cast<float *>(pdr->get_data_ptr());
+		pdr->set_taken();
+
+	} else if(pdr->starts_with(default_seek_rate_checksum)){
+		this->feed_rate = *static_cast<float *>(pdr->get_data_ptr());
+		pdr->set_taken();
+	} else if(pdr->starts_with(a_default_seek_rate_checksum)){
+		this->feed_rate = *static_cast<float *>(pdr->get_data_ptr());
+		pdr->set_taken();
+	} else if(pdr->starts_with(b_default_seek_rate_checksum)){
+		this->feed_rate = *static_cast<float *>(pdr->get_data_ptr());
+		pdr->set_taken();
+	} else if(pdr->starts_with(c_default_seek_rate_checksum)){
+		this->feed_rate = *static_cast<float *>(pdr->get_data_ptr());
+		pdr->set_taken();
+
+	} else if(pdr->starts_with(mm_per_line_segment_checksum)){
+		this->mm_per_line_segment = *static_cast<float *>(pdr->get_data_ptr());
+		pdr->set_taken();
+	} else if(pdr->starts_with(delta_segments_per_second_checksum)){
+		this->delta_segments_per_second = *static_cast<float *>(pdr->get_data_ptr());
+		pdr->set_taken();
+	} else if(pdr->starts_with(mm_per_line_segment_checksum)){
+		this->mm_per_line_segment = *static_cast<float *>(pdr->get_data_ptr());
+		pdr->set_taken();
+	} else if(pdr->starts_with(mm_per_arc_segment_checksum)){
+		this->mm_per_arc_segment = *static_cast<float *>(pdr->get_data_ptr());
+		pdr->set_taken();
+	} else if(pdr->starts_with(arc_correction_checksum)){
+		this->arc_correction = *static_cast<float *>(pdr->get_data_ptr());
+		pdr->set_taken();
+
+	} else if(pdr->starts_with(x_axis_max_speed_checksum)){
+		this->max_speeds[X_AXIS] = *static_cast<float *>(pdr->get_data_ptr());
+		pdr->set_taken();
+	} else if(pdr->starts_with(y_axis_max_speed_checksum)){
+		this->max_speeds[Y_AXIS] = *static_cast<float *>(pdr->get_data_ptr());
+		pdr->set_taken();
+	} else if(pdr->starts_with(z_axis_max_speed_checksum)){
+		this->max_speeds[Z_AXIS] = *static_cast<float *>(pdr->get_data_ptr());
+		pdr->set_taken();
+
+	} else if(pdr->starts_with(alpha_steps_per_mm_checksum)){
+		alpha_stepper_motor->change_steps_per_mm( *static_cast<float *>(pdr->get_data_ptr()) );
+		pdr->set_taken();
+	} else if(pdr->starts_with(beta_steps_per_mm_checksum)){
+		beta_stepper_motor->change_steps_per_mm( *static_cast<float *>(pdr->get_data_ptr()) );
+		pdr->set_taken();
+	} else if(pdr->starts_with(gamma_steps_per_mm_checksum)){
+		gamma_stepper_motor->change_steps_per_mm( *static_cast<float *>(pdr->get_data_ptr()) );
+		pdr->set_taken();
+	} else if(pdr->starts_with(chi_steps_per_mm_checksum)){
+		chi_stepper_motor->change_steps_per_mm( *static_cast<float *>(pdr->get_data_ptr()) );
+		pdr->set_taken();
+	} else if(pdr->starts_with(psi_steps_per_mm_checksum)){
+		psi_stepper_motor->change_steps_per_mm( *static_cast<float *>(pdr->get_data_ptr()) );
+		pdr->set_taken();
+	} else if(pdr->starts_with(omega_steps_per_mm_checksum)){
+		omega_stepper_motor->change_steps_per_mm( *static_cast<float *>(pdr->get_data_ptr()) );
+		pdr->set_taken();
+
+	} else if(pdr->starts_with(alpha_max_rate_checksum)){
+		alpha_stepper_motor->max_rate = *static_cast<float *>(pdr->get_data_ptr()) / 60.0F;
+		pdr->set_taken();
+	} else if(pdr->starts_with(beta_max_rate_checksum)){
+		beta_stepper_motor->max_rate = *static_cast<float *>(pdr->get_data_ptr()) / 60.0F;
+		pdr->set_taken();
+	} else if(pdr->starts_with(gamma_max_rate_checksum)){
+		gamma_stepper_motor->max_rate = *static_cast<float *>(pdr->get_data_ptr()) / 60.0F;
+		pdr->set_taken();
+	} else if(pdr->starts_with(chi_max_rate_checksum)){
+		chi_stepper_motor->max_rate = *static_cast<float *>(pdr->get_data_ptr()) / 60.0F;
+		pdr->set_taken();
+	} else if(pdr->starts_with(psi_max_rate_checksum)){
+		psi_stepper_motor->max_rate = *static_cast<float *>(pdr->get_data_ptr()) / 60.0F;
+		pdr->set_taken();
+	} else if(pdr->starts_with(omega_max_rate_checksum)){
+		omega_stepper_motor->max_rate = *static_cast<float *>(pdr->get_data_ptr()) / 60.0F;
+		pdr->set_taken();
+	}
+
+
 }
 
 //A GCode has been received
@@ -974,7 +1226,13 @@ void Robot::append_line(Gcode *gcode, float target[], float rate_mm_s, float a_r
     	return;
     }
     if(THEKERNEL->feedback->machine_state == 0) {
+    	//if(DEBUG) {
+    	if(DEBUG) {
+    		THEKERNEL->streams->printf("robot::append_line()=>");
+    		THEKERNEL->streams->printf("machine_state: %i\r\n", THEKERNEL->feedback->machine_state);
+    	}
     	THEKERNEL->feedback->flash_stat(1);
+    	if(DEBUG) { THEKERNEL->streams->printf("after... machine_state: %i\r\n", THEKERNEL->feedback->machine_state); }
     }
 
     gcode->millimeters_of_travel = sqrtf(gcode->millimeters_of_travel);
@@ -1034,7 +1292,7 @@ void Robot::append_line(Gcode *gcode, float target[], float rate_mm_s, float a_r
             this->append_milestone(segment_end, rate_mm_s, a_rate_mm_s, b_rate_mm_s, c_rate_mm_s);
         }
     }
-
+    if(halted) return;
     // Append the end of this full move to the queue
     this->append_milestone(target, rate_mm_s, a_rate_mm_s, b_rate_mm_s, c_rate_mm_s);
 

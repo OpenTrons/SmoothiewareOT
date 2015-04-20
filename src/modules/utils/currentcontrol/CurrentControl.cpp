@@ -40,7 +40,7 @@ CurrentControl::CurrentControl()
 
 void CurrentControl::on_module_loaded()
 {
-    if( !THEKERNEL->config->value( currentcontrol_module_enable_checksum )->by_default(false)->as_bool() ) {
+    if( !THEKERNEL->config->value( currentcontrol_module_enable_checksum )->by_default(true)->as_bool() ) {
         // as this module is not needed free up the resource
         delete this;
         return;
@@ -64,8 +64,8 @@ void CurrentControl::on_module_loaded()
 
     // Get configuration
     this->digipot->set_current(0, THEKERNEL->config->value(alpha_current_checksum  )->by_default(0.25f)->as_number());
-    this->digipot->set_current(1, THEKERNEL->config->value(beta_current_checksum   )->by_default(0.25f)->as_number());
-    this->digipot->set_current(2, THEKERNEL->config->value(gamma_current_checksum  )->by_default(0.60f)->as_number());
+    this->digipot->set_current(1, THEKERNEL->config->value(beta_current_checksum   )->by_default(0.51f)->as_number());
+    this->digipot->set_current(2, THEKERNEL->config->value(gamma_current_checksum  )->by_default(0.40f)->as_number());
     this->digipot->set_current(3, THEKERNEL->config->value(delta_current_checksum  )->by_default(0.18f)->as_number());
     this->digipot->set_current(4, THEKERNEL->config->value(epsilon_current_checksum)->by_default(0.18f)->as_number());
     this->digipot->set_current(5, THEKERNEL->config->value(zeta_current_checksum   )->by_default(-1)->as_number());

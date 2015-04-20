@@ -29,6 +29,8 @@ class Robot : public Module {
         void on_get_public_data(void* argument);
         void on_set_public_data(void* argument);
         void on_halt(void *arg);
+        void on_the_fly_get(void* argument);
+        void on_the_fly_set(void* argument);
 
         void reset_axis_position(float position, int axis);
         void reset_axis_position(float x, float y, float z, float a, float b, float c);

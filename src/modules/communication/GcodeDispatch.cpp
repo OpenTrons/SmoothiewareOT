@@ -25,6 +25,8 @@ using std::string;
 
 #define return_error_on_unhandled_gcode_checksum    CHECKSUM("return_error_on_unhandled_gcode")
 
+#define DEBUG 0
+
 // goes in Flash, list of Mxxx codes that are allowed when in Halted state
 static const int allowed_mcodes[]= {105,114}; // get temp, get pos
 static bool is_allowed_mcode(int m) {
@@ -222,9 +224,13 @@ try_again:
                         new_message.stream->printf("ok %s\r\n", gcode->txt_after_ok.c_str());
                         gcode->txt_after_ok.clear();
                     } else {
+                    	if(DEBUG) { new_message.stream->printf("GD=>machine_state: %i\r\n", THEKERNEL->feedback->machine_state); }
                         new_message.stream->printf("ok\r\n");
                         if(THEKERNEL->feedback->machine_state==4) {
-                        	THEKERNEL->feedback->machine_state=5;
+                        	if(DEBUG) { new_message.stream->printf("GD=>machine_state: %i\r\n", THEKERNEL->feedback->machine_state); }
+                        	THEKERNEL->feedback->machine_state=0;
+                        }else{
+                        	THEKERNEL->conveyor->go_ahead = true;
                         }
                     }
                     delete gcode;

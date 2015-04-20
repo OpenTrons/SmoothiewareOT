@@ -138,7 +138,7 @@ uint32_t Feedback::feedback_tick( uint32_t dummy )
 {
 	machine_state_ticker++;
 
-	if(DEBUG && machine_state_ticker < 2) {
+	/*if(DEBUG && machine_state_ticker < 2) {
 		THEKERNEL->streams->printf("**********************\r\n");
 		THEKERNEL->streams->printf("machine_state_ticker: %i\r\n", machine_state_ticker);
 		THEKERNEL->streams->printf("send_feedback: %i\r\n", send_feedback);
@@ -146,8 +146,7 @@ uint32_t Feedback::feedback_tick( uint32_t dummy )
 		THEKERNEL->streams->printf("machine_state_zero_trip: %i\r\n", machine_state_zero_trip);
 		THEKERNEL->streams->printf("machine_state_one_trip: %i\r\n", machine_state_one_trip);
 		THEKERNEL->streams->printf("**********************\r\n\r\n");
-	}
-
+	}*/
 
 	if(send_feedback) {
 
@@ -243,5 +242,9 @@ void Feedback::finished_homing(char axes_to_move, char abc_axes_to_move)
 			this->cumulative_steps_last[c] = -9999;
 		}
 	}
-	this->machine_state = 0;
+	if(DEBUG) {
+		THEKERNEL->streams->printf("Feedback::finished_homing()=>");
+		THEKERNEL->streams->printf("machine_state: %i\r\n", this->machine_state);
+	}
+	//this->machine_state = 0;
 }

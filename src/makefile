@@ -29,7 +29,7 @@ ENABLE_DEBUG_MONITOR?=0
 
 # this is the default UART baud rate used if it is not set in config
 # it is also the baud rate used to report any errors found while parsing the config file
-DEFAULT_SERIAL_BAUD_RATE?=9600
+DEFAULT_SERIAL_BAUD_RATE?=115200
 
 ifeq "$(ENABLE_DEBUG_MONITOR)" "1"
 # Can add MRI_UART_BAUD=115200 to next line if GDB fails to connect to MRI.
@@ -61,12 +61,12 @@ endif
 DEFINES += -DCHECKSUM_USE_CPP -DDEFAULT_SERIAL_BAUD_RATE=$(DEFAULT_SERIAL_BAUD_RATE)
 
 # add any modules that you do not want included in the build
-export EXCLUDED_MODULES = tools/touchprobe
+export EXCLUDED_MODULES = tools/touchprobe tools/laser tools/temperaturecontrol tools/extruder tools/spindle tools/scaracal utils/panel tools/zprobe tools/temperatureswitch tools/switch
 # e.g for a CNC machine
 #export EXCLUDED_MODULES = tools/touchprobe tools/laser tools/temperaturecontrol tools/extruder
 
 # set to not compile in any network support
-#export NONETWORK = 1
+export NONETWORK = 1
 
 include $(BUILD_DIR)/build.mk
 

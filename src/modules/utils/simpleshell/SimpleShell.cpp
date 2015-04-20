@@ -12,6 +12,9 @@
 #include "libs/utils.h"
 #include "libs/SerialMessage.h"
 #include "libs/StreamOutput.h"
+
+#include "libs/StreamOutputPool.h"
+
 #include "modules/robot/Conveyor.h"
 #include "DirHandle.h"
 #include "mri.h"
@@ -21,6 +24,7 @@
 #include "checksumm.h"
 #include "PublicData.h"
 #include "Gcode.h"
+#include "modules/communication/OnTheFlyData.h"
 
 #include "modules/tools/temperaturecontrol/TemperatureControlPublicAccess.h"
 #include "modules/robot/RobotPublicAccess.h"
@@ -67,6 +71,8 @@ const SimpleShell::ptentry_t SimpleShell::commands_table[] = {
     {"load",     SimpleShell::load_command},
     {"save",     SimpleShell::save_command},
     {"remount",  SimpleShell::remount_command},
+	{"ot_get",   SimpleShell::ot_get_command},
+	{"ot_set",	 SimpleShell::ot_set_command},
 
     // unknown command
     {NULL, NULL}
@@ -613,6 +619,55 @@ void SimpleShell::switch_command( string parameters, StreamOutput *stream)
     }
 }
 
+void SimpleShell::ot_get_command( string parameters, StreamOutput *stream)
+{
+
+	//THEKERNEL->streams->printf("stream ready? %i\r\n", stream->ready());
+	THEKERNEL->streams->printf("params: %s\r\n", parameters.c_str());
+	string what = shift_parameter( parameters );
+	void *returned_data;
+	uint16_t setting_checksums[3];
+	THEKERNEL->streams->printf("what: %s\r\n", what.c_str());
+	if(what!=""){
+		get_checksums( setting_checksums, what);
+		THEKERNEL->streams->printf("sc[0]=%i\r\n", setting_checksums[0]);
+		THEKERNEL->streams->printf("sc[1]=%i\r\n", setting_checksums[1]);
+		THEKERNEL->streams->printf("sc[2]=%i\r\n", setting_checksums[2]);
+
+		bool ok = OnTheFlyData::get_value( setting_checksums[0], setting_checksums[1], setting_checksums[2], &returned_data );
+
+		if (ok) {
+			THEKERNEL->streams->printf("ok? %i\r\n", ok);
+			//string result = *static_cast<string *>(returned_data);
+			//stream->printf("result: %s\r\n", result.c_str());
+		} else {
+			stream->printf("ot_get command failed\r\n");
+		}
+	} else {
+		stream->printf("ot_get command failed\r\n");
+	}
+}
+
+void SimpleShell::ot_set_command( string parameters, StreamOutput *stream)
+{
+	string what = shift_parameter( parameters );
+	string value = shift_parameter( parameters );
+	uint16_t setting_checksums[3];
+	if(what!=""){
+	get_checksums( setting_checksums, what);
+
+	bool ok = OnTheFlyData::set_value( setting_checksums[0], setting_checksums[1], setting_checksums[2], &value);
+
+		if (ok) {
+			stream->printf("%s\r\n", value.c_str());
+		} else {
+			stream->printf("ot_set command failed\r\n");
+		}
+	} else {
+		stream->printf("ot_set command failed\r\n");
+	}
+}
+
 void SimpleShell::help_command( string parameters, StreamOutput *stream )
 {
     stream->printf("Commands:\r\n");
@@ -639,5 +694,7 @@ void SimpleShell::help_command( string parameters, StreamOutput *stream )
     stream->printf("net\r\n");
     stream->printf("load [file] - loads a configuration override file from soecified name or config-override\r\n");
     stream->printf("save [file] - saves a configuration override file as specified filename or as config-override\r\n");
+    stream->printf("ot_get <setting>\r\n");
+    stream->printf("ot_set <setting> <value>\r\n");
 }
 

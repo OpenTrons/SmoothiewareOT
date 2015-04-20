@@ -80,7 +80,7 @@ void Config::config_cache_clear()
     this->config_cache= NULL;
 }
 
-// Three ways to read a value from the config, depending on adress length
+// Three ways to read a value from the config, depending on address length
 ConfigValue *Config::value(uint16_t check_sum_a, uint16_t check_sum_b, uint16_t check_sum_c )
 {
     uint16_t check_sums[3];

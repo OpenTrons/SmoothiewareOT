@@ -49,8 +49,8 @@ Planner::Planner(){
 
 // Configure acceleration
 void Planner::config_load() {
-    this->acceleration = THEKERNEL->config->value(acceleration_checksum)->by_default(100.0F )->as_number(); // Acceleration is in mm/s^2
-    this->z_acceleration = THEKERNEL->config->value(z_acceleration_checksum)->by_default(0.0F )->as_number(); // disabled by default
+    this->acceleration = THEKERNEL->config->value(acceleration_checksum)->by_default(500.0F )->as_number(); // Acceleration is in mm/s^2
+    this->z_acceleration = THEKERNEL->config->value(z_acceleration_checksum)->by_default(300.0F )->as_number(); // disabled by default
 
     this->a_acceleration = THEKERNEL->config->value(a_acceleration_checksum)->by_default(16.0F )->as_number(); // disabled by default
     this->b_acceleration = THEKERNEL->config->value(b_acceleration_checksum)->by_default(16.0F )->as_number(); // disabled by default

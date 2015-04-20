@@ -31,6 +31,8 @@ class StepTicker;
 class Adc;
 class PublicData;
 
+class OnTheFlyData;
+
 class Feedback;
 class Endstops;
 

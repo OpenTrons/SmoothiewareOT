@@ -45,6 +45,8 @@ public:
     void flush_queue(void);
     bool is_flushing() const { return flush; }
 
+    volatile bool go_ahead;
+
     friend class Planner; // for queue
 
 private:
@@ -57,7 +59,7 @@ private:
         volatile bool running:1;
         volatile bool flush:1;
         volatile bool halted:1;
-        volatile bool delayed_flush:1;
+        //volatile bool delayed_flush:1;
     };
 
 };

@@ -33,7 +33,7 @@ CustomScreen::CustomScreen()
 
     // load the custom menu items
     for ( unsigned int i = 0; i < modules.size(); i++ ) {
-        if (THEKERNEL->config->value(custom_menu_checksum, modules[i], enable_checksum )->as_bool()) {
+        if (THEKERNEL->config->value(custom_menu_checksum, modules[i], enable_checksum )->by_default(false)->as_bool()) {
             // Get Menu entry name
             string name = THEKERNEL->config->value(custom_menu_checksum, modules[i], name_checksum )->as_string();
             std::replace( name.begin(), name.end(), '_', ' '); // replace _ with space

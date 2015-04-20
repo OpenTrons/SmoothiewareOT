@@ -26,6 +26,7 @@ using namespace std;
 #include "modules/tools/endstops/Endstops.h"
 #include "modules/robot/Robot.h"
 #include "SerialConsole.h"
+#include "StepperMotor.h"
 
 #define planner_queue_size_checksum CHECKSUM("planner_queue_size")
 
@@ -64,7 +65,7 @@ Conveyor::Conveyor(){
     flush = false;
     halted= false;
 
-    delayed_flush = false;
+    //delayed_flush = false;
 }
 
 void Conveyor::on_module_loaded(){
@@ -169,14 +170,22 @@ void Conveyor::on_block_end(void* block)
     {
         running = false;
 
-        if(THEKERNEL->feedback->machine_state != 4) {
-        	THEKERNEL->feedback->machine_state = 0;
-        } else {
-        	if(THEKERNEL->feedback->send_feedback) {
-        		THEKERNEL->streams->printf("***\r\n");
+        if(DEBUG) {
+        	THEKERNEL->streams->printf("conveyor::on_block_end()=>");
+        	THEKERNEL->streams->printf("machine_state: %i\r\n", THEKERNEL->feedback->machine_state);
+        }
+        if(this->go_ahead) {
+        	this->go_ahead = false;
+			if(THEKERNEL->feedback->machine_state != 4) {
+				THEKERNEL->feedback->flash_stat(0);
+				THEKERNEL->feedback->machine_state = 0;
+			} else {
+				if(THEKERNEL->feedback->send_feedback) {
+					THEKERNEL->streams->printf("***\r\n");	// Appears to never get called... UPDATE: gets called
+        		}
         	}
         }
-
+        if(DEBUG) { THEKERNEL->streams->printf("after... machine_state: %i\r\n", THEKERNEL->feedback->machine_state); }
         return;
     }
 
@@ -189,7 +198,15 @@ void Conveyor::on_block_end(void* block)
 // Wait for the queue to be empty
 void Conveyor::wait_for_empty_queue()
 {
+	if(DEBUG) THEKERNEL->streams->printf("conveyor::wait_for_empty_queue\r\n");
     while (!queue.is_empty()) {
+
+		if(halted){
+			for(int i=0; i<6; i++){
+				THEKERNEL->robot->actuators[i]->signal_move_finished();
+			}
+		}
+
         ensure_running();
         THEKERNEL->call_event(ON_IDLE, this);
     }
@@ -201,6 +218,7 @@ void Conveyor::wait_for_empty_queue()
 void Conveyor::queue_head_block()
 {
     // upstream caller will block on this until there is room in the queue
+	if(DEBUG) THEKERNEL->streams->printf("conveyor::queue_head_block... full: %i, halted:%i\r\n", queue.is_full(), halted);
     while (queue.is_full()) {
 
     	THEKERNEL->feedback->machine_state = 2;
@@ -209,10 +227,10 @@ void Conveyor::queue_head_block()
         THEKERNEL->call_event(ON_IDLE, this);
     }
 
-    if(delayed_flush) {
-    	delayed_flush = false;
-    	return; //TODO: see if this really works to bypass extra block in flush... or just screws things up.
-    }
+    //if(delayed_flush) {
+    //	delayed_flush = false;
+    //	return; //TODO: see if this really works to bypass extra block in flush... or just screws things up. APPEARS TO JUST SCREW THINGS UP!!
+    //}
 
     if(halted) {
         // we do not want to stick more stuff on the queue if we are in halt state
@@ -220,8 +238,9 @@ void Conveyor::queue_head_block()
         queue.head_ref()->clear();
 
     }else{
-    	THEKERNEL->feedback->machine_state = 3;
-
+    	// why is this machine_state = 3 here?
+    	//THEKERNEL->feedback->machine_state = 3;
+    	if(DEBUG) THEKERNEL->streams->printf("NOT halted\r\n");
         queue.head_ref()->ready();
         queue.produce_head();
     }
@@ -229,6 +248,7 @@ void Conveyor::queue_head_block()
 
 void Conveyor::ensure_running()
 {
+	if(DEBUG) THEKERNEL->streams->printf("conveyor::ensure_running... %i\r\n", running);
     if (!running)
     {
         if (gc_pending == queue.head_i)
@@ -236,7 +256,14 @@ void Conveyor::ensure_running()
 
         running = true;
 
-        THEKERNEL->feedback->machine_state = 1;
+        if(DEBUG) {
+        	THEKERNEL->streams->printf("conveyor::ensure_running()=>");
+        	THEKERNEL->streams->printf("machine_state: %i\r\n", THEKERNEL->feedback->machine_state);
+        }
+        if(THEKERNEL->feedback->machine_state!=4) {
+        	THEKERNEL->feedback->machine_state = 1;
+        }
+        if(DEBUG) { THEKERNEL->streams->printf("after... machine_state: %i\r\n", THEKERNEL->feedback->machine_state); }
 
         queue.item_ref(gc_pending)->begin();
     }
@@ -256,7 +283,7 @@ void Conveyor::flush_queue()
 {
 	if(DEBUG) { THEKERNEL->streams->printf("flush_queue called\r\n"); }
     flush = true;
-    delayed_flush = true;
+    //delayed_flush = true;
 	wait_for_empty_queue();
     flush = false;
 }
