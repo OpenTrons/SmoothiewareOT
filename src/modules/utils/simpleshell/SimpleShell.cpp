@@ -637,7 +637,7 @@ void SimpleShell::ot_get_command( string parameters, StreamOutput *stream)
 		bool ok = OnTheFlyData::get_value( setting_checksums[0], setting_checksums[1], setting_checksums[2], &returned_data );
 
 		if (ok) {
-			THEKERNEL->streams->printf("ok? %i\r\n", ok);
+			THEKERNEL->streams->printf("ot_get command succeeded\r\n");
 			//string result = *static_cast<string *>(returned_data);
 			//stream->printf("result: %s\r\n", result.c_str());
 		} else {

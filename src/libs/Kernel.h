@@ -69,6 +69,8 @@ class Kernel {
         std::string       current_path;
         int               base_stepping_frequency;
 
+        bool			  use_json;
+
         typedef struct {
         	int			f_id;
         	int32_t		f_current_position_steps;

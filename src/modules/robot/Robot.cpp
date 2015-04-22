@@ -468,13 +468,13 @@ void Robot::on_the_fly_get(void* argument)
 	if(pdr->starts_with(robot_checksum)){
 		if(pdr->second_element_is(0) && pdr->third_element_is(0)){
 			THEKERNEL->streams->printf("{\"default_feed_rate\":%f}\r\n",this->feed_rate);
-			THEKERNEL->streams->printf("{\"a_feed_rate\":%f}\r\n",this->a_feed_rate);
-			THEKERNEL->streams->printf("{\"b_feed_rate\":%f}\r\n",this->b_feed_rate);
-			THEKERNEL->streams->printf("{\"c_feed_rate\":%f}\r\n",this->c_feed_rate);
+			THEKERNEL->streams->printf("{\"a_default_feed_rate\":%f}\r\n",this->a_feed_rate);
+			THEKERNEL->streams->printf("{\"b_default_feed_rate\":%f}\r\n",this->b_feed_rate);
+			THEKERNEL->streams->printf("{\"c_default_feed_rate\":%f}\r\n",this->c_feed_rate);
 			THEKERNEL->streams->printf("{\"default_seek_rate\":%f}\r\n",this->seek_rate);
-			THEKERNEL->streams->printf("{\"a_seek_rate\":%f}\r\n",this->a_seek_rate);
-			THEKERNEL->streams->printf("{\"b_seek_rate\":%f}\r\n",this->b_seek_rate);
-			THEKERNEL->streams->printf("{\"c_seek_rate\":%f}\r\n",this->c_seek_rate);
+			THEKERNEL->streams->printf("{\"a_default_seek_rate\":%f}\r\n",this->a_seek_rate);
+			THEKERNEL->streams->printf("{\"b_default_seek_rate\":%f}\r\n",this->b_seek_rate);
+			THEKERNEL->streams->printf("{\"c_default_seek_rate\":%f}\r\n",this->c_seek_rate);
 			THEKERNEL->streams->printf("{\"mm_per_line_segment\":%f}\r\n",this->mm_per_line_segment);
 			THEKERNEL->streams->printf("{\"delta_segments_per_second\":%f}\r\n",this->delta_segments_per_second);
 			THEKERNEL->streams->printf("{\"mm_per_arc_segment\":%f}\r\n",this->mm_per_arc_segment);
@@ -504,26 +504,26 @@ void Robot::on_the_fly_get(void* argument)
 		THEKERNEL->streams->printf("{\"default_feed_rate\":%f}\r\n",this->feed_rate);
 		pdr->set_taken();
 	} else if(pdr->starts_with(a_default_feed_rate_checksum)){
-		THEKERNEL->streams->printf("{\"a_feed_rate\":%f}\r\n",this->a_feed_rate);
+		THEKERNEL->streams->printf("{\"a_default_feed_rate\":%f}\r\n",this->a_feed_rate);
 		pdr->set_taken();
 	} else if(pdr->starts_with(b_default_feed_rate_checksum)){
-		THEKERNEL->streams->printf("{\"b_feed_rate\":%f}\r\n",this->b_feed_rate);
+		THEKERNEL->streams->printf("{\"b_default_feed_rate\":%f}\r\n",this->b_feed_rate);
 		pdr->set_taken();
 	} else if(pdr->starts_with(c_default_feed_rate_checksum)){
-		THEKERNEL->streams->printf("{\"c_feed_rate\":%f}\r\n",this->c_feed_rate);
+		THEKERNEL->streams->printf("{\"c_default_feed_rate\":%f}\r\n",this->c_feed_rate);
 		pdr->set_taken();
 
 	} else if(pdr->starts_with(default_seek_rate_checksum)){
 		THEKERNEL->streams->printf("{\"default_seek_rate\":%f}\r\n",this->seek_rate);
 		pdr->set_taken();
 	} else if(pdr->starts_with(a_default_seek_rate_checksum)){
-		THEKERNEL->streams->printf("{\"a_seek_rate\":%f}\r\n",this->a_seek_rate);
+		THEKERNEL->streams->printf("{\"a_default_seek_rate\":%f}\r\n",this->a_seek_rate);
 		pdr->set_taken();
 	} else if(pdr->starts_with(b_default_seek_rate_checksum)){
-		THEKERNEL->streams->printf("{\"b_seek_rate\":%f}\r\n",this->b_seek_rate);
+		THEKERNEL->streams->printf("{\"b_default_seek_rate\":%f}\r\n",this->b_seek_rate);
 		pdr->set_taken();
 	} else if(pdr->starts_with(c_default_seek_rate_checksum)){
-		THEKERNEL->streams->printf("{\"c_seek_rate\":%f}\r\n",this->c_seek_rate);
+		THEKERNEL->streams->printf("{\"c_default_seek_rate\":%f}\r\n",this->c_seek_rate);
 		pdr->set_taken();
 
 	} else if(pdr->starts_with(mm_per_line_segment_checksum)){
@@ -594,99 +594,100 @@ void Robot::on_the_fly_set(void* argument)
 	if(DEBUG) THEKERNEL->streams->printf("Robot::on_the_fly_set() called\r\n");
 
 	PublicDataRequest *pdr = static_cast<PublicDataRequest *>(argument);
+	string str_value = *static_cast<string *>(pdr->get_data_ptr());
 
 	if(pdr->starts_with(default_feed_rate_checksum)){
-		//this->feed_rate = *static_cast<float *>(pdr->get_data_ptr());
-		float fake_feed_rate = *static_cast<float *>(pdr->get_data_ptr());
-		if(DEBUG) THEKERNEL->streams->printf("default_feed_rate: %f\r\n", fake_feed_rate);
+		this->feed_rate = strtof(str_value.c_str(), NULL);
 		pdr->set_taken();
 	} else if(pdr->starts_with(a_default_feed_rate_checksum)){
-		//this->a_feed_rate = *static_cast<float *>(pdr->get_data_ptr());
-		float fake_a_feed_rate = *static_cast<float *>(pdr->get_data_ptr());
-		if(DEBUG) THEKERNEL->streams->printf("default_feed_rate: %f\r\n", fake_a_feed_rate);
+		this->a_feed_rate = strtof(str_value.c_str(), NULL);
 		pdr->set_taken();
 	} else if(pdr->starts_with(b_default_feed_rate_checksum)){
-		this->b_feed_rate = *static_cast<float *>(pdr->get_data_ptr());
+		this->b_feed_rate = strtof(str_value.c_str(), NULL);
 		pdr->set_taken();
 	} else if(pdr->starts_with(c_default_feed_rate_checksum)){
-		this->c_feed_rate = *static_cast<float *>(pdr->get_data_ptr());
+		this->c_feed_rate = strtof(str_value.c_str(), NULL);
 		pdr->set_taken();
 
 	} else if(pdr->starts_with(default_seek_rate_checksum)){
-		this->feed_rate = *static_cast<float *>(pdr->get_data_ptr());
+		this->seek_rate = strtof(str_value.c_str(), NULL);
+		this->default_seek_rates[0] = this->seek_rate;
 		pdr->set_taken();
 	} else if(pdr->starts_with(a_default_seek_rate_checksum)){
-		this->feed_rate = *static_cast<float *>(pdr->get_data_ptr());
+		this->a_seek_rate = strtof(str_value.c_str(), NULL);
+		this->default_seek_rates[1] = this->a_seek_rate;
 		pdr->set_taken();
 	} else if(pdr->starts_with(b_default_seek_rate_checksum)){
-		this->feed_rate = *static_cast<float *>(pdr->get_data_ptr());
+		this->b_seek_rate = strtof(str_value.c_str(), NULL);
+		this->default_seek_rates[2] = this->b_seek_rate;
 		pdr->set_taken();
 	} else if(pdr->starts_with(c_default_seek_rate_checksum)){
-		this->feed_rate = *static_cast<float *>(pdr->get_data_ptr());
+		this->c_seek_rate = strtof(str_value.c_str(), NULL);
+		this->default_seek_rates[3] = this->c_seek_rate;
 		pdr->set_taken();
 
 	} else if(pdr->starts_with(mm_per_line_segment_checksum)){
-		this->mm_per_line_segment = *static_cast<float *>(pdr->get_data_ptr());
+		this->mm_per_line_segment = strtof(str_value.c_str(), NULL);
 		pdr->set_taken();
 	} else if(pdr->starts_with(delta_segments_per_second_checksum)){
-		this->delta_segments_per_second = *static_cast<float *>(pdr->get_data_ptr());
+		this->delta_segments_per_second = strtof(str_value.c_str(), NULL);
 		pdr->set_taken();
 	} else if(pdr->starts_with(mm_per_line_segment_checksum)){
-		this->mm_per_line_segment = *static_cast<float *>(pdr->get_data_ptr());
+		this->mm_per_line_segment = strtof(str_value.c_str(), NULL);
 		pdr->set_taken();
 	} else if(pdr->starts_with(mm_per_arc_segment_checksum)){
-		this->mm_per_arc_segment = *static_cast<float *>(pdr->get_data_ptr());
+		this->mm_per_arc_segment = strtof(str_value.c_str(), NULL);
 		pdr->set_taken();
 	} else if(pdr->starts_with(arc_correction_checksum)){
-		this->arc_correction = *static_cast<float *>(pdr->get_data_ptr());
+		this->arc_correction = strtof(str_value.c_str(), NULL);
 		pdr->set_taken();
 
 	} else if(pdr->starts_with(x_axis_max_speed_checksum)){
-		this->max_speeds[X_AXIS] = *static_cast<float *>(pdr->get_data_ptr());
+		this->max_speeds[X_AXIS] = strtof(str_value.c_str(), NULL);
 		pdr->set_taken();
 	} else if(pdr->starts_with(y_axis_max_speed_checksum)){
-		this->max_speeds[Y_AXIS] = *static_cast<float *>(pdr->get_data_ptr());
+		this->max_speeds[Y_AXIS] = strtof(str_value.c_str(), NULL);
 		pdr->set_taken();
 	} else if(pdr->starts_with(z_axis_max_speed_checksum)){
-		this->max_speeds[Z_AXIS] = *static_cast<float *>(pdr->get_data_ptr());
+		this->max_speeds[Z_AXIS] = strtof(str_value.c_str(), NULL);
 		pdr->set_taken();
 
 	} else if(pdr->starts_with(alpha_steps_per_mm_checksum)){
-		alpha_stepper_motor->change_steps_per_mm( *static_cast<float *>(pdr->get_data_ptr()) );
+		alpha_stepper_motor->change_steps_per_mm( strtof(str_value.c_str(), NULL) );
 		pdr->set_taken();
 	} else if(pdr->starts_with(beta_steps_per_mm_checksum)){
-		beta_stepper_motor->change_steps_per_mm( *static_cast<float *>(pdr->get_data_ptr()) );
+		beta_stepper_motor->change_steps_per_mm( strtof(str_value.c_str(), NULL) );
 		pdr->set_taken();
 	} else if(pdr->starts_with(gamma_steps_per_mm_checksum)){
-		gamma_stepper_motor->change_steps_per_mm( *static_cast<float *>(pdr->get_data_ptr()) );
+		gamma_stepper_motor->change_steps_per_mm( strtof(str_value.c_str(), NULL) );
 		pdr->set_taken();
 	} else if(pdr->starts_with(chi_steps_per_mm_checksum)){
-		chi_stepper_motor->change_steps_per_mm( *static_cast<float *>(pdr->get_data_ptr()) );
+		chi_stepper_motor->change_steps_per_mm( strtof(str_value.c_str(), NULL) );
 		pdr->set_taken();
 	} else if(pdr->starts_with(psi_steps_per_mm_checksum)){
-		psi_stepper_motor->change_steps_per_mm( *static_cast<float *>(pdr->get_data_ptr()) );
+		psi_stepper_motor->change_steps_per_mm( strtof(str_value.c_str(), NULL) );
 		pdr->set_taken();
 	} else if(pdr->starts_with(omega_steps_per_mm_checksum)){
-		omega_stepper_motor->change_steps_per_mm( *static_cast<float *>(pdr->get_data_ptr()) );
+		omega_stepper_motor->change_steps_per_mm( strtof(str_value.c_str(), NULL) );
 		pdr->set_taken();
 
 	} else if(pdr->starts_with(alpha_max_rate_checksum)){
-		alpha_stepper_motor->max_rate = *static_cast<float *>(pdr->get_data_ptr()) / 60.0F;
+		alpha_stepper_motor->max_rate = strtof(str_value.c_str(), NULL) / 60.0F;
 		pdr->set_taken();
 	} else if(pdr->starts_with(beta_max_rate_checksum)){
-		beta_stepper_motor->max_rate = *static_cast<float *>(pdr->get_data_ptr()) / 60.0F;
+		beta_stepper_motor->max_rate = strtof(str_value.c_str(), NULL) / 60.0F;
 		pdr->set_taken();
 	} else if(pdr->starts_with(gamma_max_rate_checksum)){
-		gamma_stepper_motor->max_rate = *static_cast<float *>(pdr->get_data_ptr()) / 60.0F;
+		gamma_stepper_motor->max_rate = strtof(str_value.c_str(), NULL) / 60.0F;
 		pdr->set_taken();
 	} else if(pdr->starts_with(chi_max_rate_checksum)){
-		chi_stepper_motor->max_rate = *static_cast<float *>(pdr->get_data_ptr()) / 60.0F;
+		chi_stepper_motor->max_rate = strtof(str_value.c_str(), NULL) / 60.0F;
 		pdr->set_taken();
 	} else if(pdr->starts_with(psi_max_rate_checksum)){
-		psi_stepper_motor->max_rate = *static_cast<float *>(pdr->get_data_ptr()) / 60.0F;
+		psi_stepper_motor->max_rate = strtof(str_value.c_str(), NULL) / 60.0F;
 		pdr->set_taken();
 	} else if(pdr->starts_with(omega_max_rate_checksum)){
-		omega_stepper_motor->max_rate = *static_cast<float *>(pdr->get_data_ptr()) / 60.0F;
+		omega_stepper_motor->max_rate = strtof(str_value.c_str(), NULL) / 60.0F;
 		pdr->set_taken();
 	}
 
@@ -750,38 +751,151 @@ void Robot::on_gcode_received(void *argument)
                     actuators[2]->change_steps_per_mm(this->to_millimeters(gcode->get_value('Z')));
                 if (gcode->has_letter('F'))
                     seconds_per_minute = gcode->get_value('F');
-
-                gcode->stream->printf("X:%g Y:%g Z:%g F:%g ", actuators[0]->steps_per_mm, actuators[1]->steps_per_mm, actuators[2]->steps_per_mm, seconds_per_minute);
+                if(THEKERNEL->use_json) {
+                	gcode->stream->printf("{\"M92\":{\"X\":%g,\"Y\":%g,\"Z\":%g,\"F\":%g}}", actuators[0]->steps_per_mm, actuators[1]->steps_per_mm, actuators[2]->steps_per_mm, seconds_per_minute);
+                } else {
+                	gcode->stream->printf("X:%g Y:%g Z:%g F:%g ", actuators[0]->steps_per_mm, actuators[1]->steps_per_mm, actuators[2]->steps_per_mm, seconds_per_minute);
+                }
                 gcode->add_nl = true;
                 gcode->mark_as_taken();
                 check_max_actuator_speeds();
             }
             return;
             case 114: {
-                char buf[64];
-                int n = snprintf(buf, sizeof(buf), "C: X:%1.3f Y:%1.3f Z:%1.3f x:%1.3f y:%1.3f z:%1.3f\r\n",
-                                 from_millimeters(this->last_milestone[0]),
-                                 from_millimeters(this->last_milestone[1]),
-                                 from_millimeters(this->last_milestone[2]),
-                                 actuators[X_AXIS]->get_current_position(),
-                                 actuators[Y_AXIS]->get_current_position(),
-                                 actuators[Z_AXIS]->get_current_position() );
-                gcode->txt_after_ok.append(buf, n);
-                char abc_buf[64];
-				int p = snprintf(abc_buf, sizeof(abc_buf), "C: A:%1.3f B:%1.3f C:%1.3f a:%1.3f b:%1.3f c:%1.3f\r\n",
-								 from_millimeters(this->last_milestone[3]),
-								 from_millimeters(this->last_milestone[4]),
-								 from_millimeters(this->last_milestone[5]),
-								 actuators[A_AXIS]->get_current_position(),
-								 actuators[B_AXIS]->get_current_position(),
-								 actuators[C_AXIS]->get_current_position() );
-				gcode->txt_after_ok.append(abc_buf, p);
+
+                int n = 0;
+                if(THEKERNEL->use_json){
+                	char buf_j[64];
+                	char buf_s[64];
+                	char buf_o[64];
+                	char buf_n[64];
+                	n = snprintf(buf_j, sizeof(buf_j), "{\"M114\":{\"X\":%1.3f,\"Y\":%1.3f,\"Z\":%1.3f,",
+									 from_millimeters(this->last_milestone[0]),
+									 from_millimeters(this->last_milestone[1]),
+									 from_millimeters(this->last_milestone[2]) );
+                	gcode->txt_after_ok.append(buf_j, n);
+                	n = snprintf(buf_s, sizeof(buf_s), "\"x\":%1.3f,\"y\":%1.3f,\"z\":%1.3f,",
+									 actuators[X_AXIS]->get_current_position(),
+									 actuators[Y_AXIS]->get_current_position(),
+									 actuators[Z_AXIS]->get_current_position() );
+                	gcode->txt_after_ok.append(buf_s, n);
+                	n = snprintf(buf_o, sizeof(buf_o), "\"A\":%1.3f,\"B\":%1.3f,\"C\":%1.3f,",
+                					 from_millimeters(this->last_milestone[3]),
+									 from_millimeters(this->last_milestone[4]),
+									 from_millimeters(this->last_milestone[5]) );
+                	gcode->txt_after_ok.append(buf_o, n);
+                	n = snprintf(buf_n, sizeof(buf_n), "\"a\":%1.3f,\"b\":%1.3f,\"c\":%1.3f}}\r\n",
+                					 actuators[A_AXIS]->get_current_position(),
+									 actuators[B_AXIS]->get_current_position(),
+									 actuators[C_AXIS]->get_current_position() );
+					gcode->txt_after_ok.append(buf_n, n);
+                } else {
+                	char buf[64];
+					n = snprintf(buf, sizeof(buf), "C: X:%1.3f Y:%1.3f Z:%1.3f x:%1.3f y:%1.3f z:%1.3f\r\n",
+									 from_millimeters(this->last_milestone[0]),
+									 from_millimeters(this->last_milestone[1]),
+									 from_millimeters(this->last_milestone[2]),
+									 actuators[X_AXIS]->get_current_position(),
+									 actuators[Y_AXIS]->get_current_position(),
+									 actuators[Z_AXIS]->get_current_position() );
+					gcode->txt_after_ok.append(buf, n);
+					char abc_buf[64];
+					int p = snprintf(abc_buf, sizeof(abc_buf), "C: A:%1.3f B:%1.3f C:%1.3f a:%1.3f b:%1.3f c:%1.3f\r\n",
+									 from_millimeters(this->last_milestone[3]),
+									 from_millimeters(this->last_milestone[4]),
+									 from_millimeters(this->last_milestone[5]),
+									 actuators[A_AXIS]->get_current_position(),
+									 actuators[B_AXIS]->get_current_position(),
+									 actuators[C_AXIS]->get_current_position() );
+					gcode->txt_after_ok.append(abc_buf, p);
+                }
                 gcode->mark_as_taken();
 
             }
             return;
+            case 198: {
+            	if(THEKERNEL->use_json){
+            		int n = 0;
+            		bool use_comma = false;
+            		if (gcode->has_letter('S')) n  = 1;
+            		if (gcode->has_letter('A')) n += 2;
+            		if (gcode->has_letter('B')) n += 4;
+            		if (gcode->has_letter('C')) n += 8;
 
-            case 203:{ // M203 Set maximum feedrates in mm/sec
+            		if(n>0) {
+            			gcode->stream->printf("{\"M198\":{");
+            			if(n==1 ||n==3 ||n==5 ||n==7 ||n==9 ||n==11||n==13||n==15) gcode->stream->printf("\"S\":%g", this->feed_rate); use_comma = true;
+            			if(n==2 ||n==3 ||n==6 ||n==7 ||n==10||n==11||n==14||n==15){
+            				if(use_comma) gcode->stream->printf(",\"A\":%g", this->a_feed_rate);
+            				else 		  gcode->stream->printf( "\"A\":%g", this->a_feed_rate); use_comma = true;
+            			}
+            			if(n==4 ||n==5 ||n==6 ||n==7 ||n==12||n==14||n==15){
+							if(use_comma) gcode->stream->printf(",\"B\":%g", this->b_feed_rate);
+							else 		  gcode->stream->printf( "\"B\":%g", this->b_feed_rate); use_comma = true;
+						}
+            			if(n==8 ||n==9 ||n==10||n==11||n==12||n==13||n==14||n==15){
+							if(use_comma) gcode->stream->printf(",\"C\":%g", this->c_feed_rate);
+							else 		  gcode->stream->printf( "\"C\":%g", this->c_feed_rate);use_comma = true;
+						}
+            			gcode->stream->printf("}}");
+            		}
+
+            	} else {
+            		if (gcode->has_letter('S'))
+						gcode->stream->printf("S:%g ", this->feed_rate);
+					if (gcode->has_letter('A'))
+						gcode->stream->printf("A:%g ", this->a_feed_rate);
+					if (gcode->has_letter('B'))
+						gcode->stream->printf("B:%g ", this->b_feed_rate);
+					if (gcode->has_letter('C'))
+						gcode->stream->printf("C:%g ", this->c_feed_rate);
+            	}
+				gcode->add_nl = true;
+				gcode->mark_as_taken();
+			}
+			break;
+            case 199: {
+            	if(THEKERNEL->use_json){
+					int n = 0;
+					bool use_comma = false;
+					if (gcode->has_letter('S')) n  = 1;
+					if (gcode->has_letter('A')) n += 2;
+					if (gcode->has_letter('B')) n += 4;
+					if (gcode->has_letter('C')) n += 8;
+
+					if(n>0) {
+						gcode->stream->printf("{\"M198\":{");
+						if(n==1 ||n==3 ||n==5 ||n==7 ||n==9 ||n==11||n==13||n==15) gcode->stream->printf("\"S\":%g", this->seek_rate); use_comma = true;
+						if(n==2 ||n==3 ||n==6 ||n==7 ||n==10||n==11||n==14||n==15){
+							if(use_comma) gcode->stream->printf(",\"A\":%g", this->a_seek_rate);
+							else 		  gcode->stream->printf( "\"A\":%g", this->a_seek_rate); use_comma = true;
+						}
+						if(n==4 ||n==5 ||n==6 ||n==7 ||n==12||n==14||n==15){
+							if(use_comma) gcode->stream->printf(",\"B\":%g", this->b_seek_rate);
+							else 		  gcode->stream->printf( "\"B\":%g", this->b_seek_rate); use_comma = true;
+						}
+						if(n==8 ||n==9 ||n==10||n==11||n==12||n==13||n==14||n==15){
+							if(use_comma) gcode->stream->printf(",\"C\":%g", this->c_seek_rate);
+							else 		  gcode->stream->printf( "\"C\":%g", this->c_seek_rate); use_comma = true;
+						}
+						gcode->stream->printf("}}");
+					}
+
+				} else {
+					if (gcode->has_letter('S'))
+						gcode->stream->printf("S:%g ", this->seek_rate);
+					if (gcode->has_letter('A'))
+						gcode->stream->printf("A:%g ", this->a_seek_rate);
+					if (gcode->has_letter('B'))
+						gcode->stream->printf("B:%g ", this->b_seek_rate);
+					if (gcode->has_letter('C'))
+						gcode->stream->printf("C:%g ", this->c_seek_rate);
+				}
+            	gcode->add_nl = true;
+            	gcode->mark_as_taken();
+            }
+            break;
+            case 203: { // M203 Set maximum feedrates in mm/sec
                 if (gcode->has_letter('X'))
                     this->max_speeds[X_AXIS] = gcode->get_value('X');
                 if (gcode->has_letter('Y'))
@@ -797,9 +911,15 @@ void Robot::on_gcode_received(void *argument)
 
                 check_max_actuator_speeds();
 
-                gcode->stream->printf("X:%g Y:%g Z:%g  A:%g B:%g C:%g ",
-                                      this->max_speeds[X_AXIS], this->max_speeds[Y_AXIS], this->max_speeds[Z_AXIS],
-                                      alpha_stepper_motor->max_rate, beta_stepper_motor->max_rate, gamma_stepper_motor->max_rate);
+                if(THEKERNEL->use_json){
+                	gcode->stream->printf("{\"M203\":{\"X\":%g,\"Y\":%g,\"Z\":%g,\"A\":%g,\"B\":%g,\"C\":%g}}",
+                						  this->max_speeds[X_AXIS], this->max_speeds[Y_AXIS], this->max_speeds[Z_AXIS],
+                						  alpha_stepper_motor->max_rate, beta_stepper_motor->max_rate, gamma_stepper_motor->max_rate);
+                } else {
+					gcode->stream->printf("X:%g Y:%g Z:%g  A:%g B:%g C:%g ",
+										  this->max_speeds[X_AXIS], this->max_speeds[Y_AXIS], this->max_speeds[Z_AXIS],
+										  alpha_stepper_motor->max_rate, beta_stepper_motor->max_rate, gamma_stepper_motor->max_rate);
+                }
                 gcode->add_nl = true;
                 gcode->mark_as_taken();
 
@@ -847,7 +967,16 @@ void Robot::on_gcode_received(void *argument)
 						acc = 1.0F;
 					THEKERNEL->planner->c_acceleration = acc;
 				}
-
+                if(THEKERNEL->use_json) {
+                	gcode->stream->printf("{\"M204\":{\"s\":%g,\"z\":%g,\"a\":%g,\"b\":%g,\"c\":%g}}",
+                						  THEKERNEL->planner->acceleration, THEKERNEL->planner->z_acceleration, THEKERNEL->planner->a_acceleration,
+                						  THEKERNEL->planner->b_acceleration, THEKERNEL->planner->c_acceleration );
+                } else {
+					gcode->stream->printf("s:%g z:%g  a:%g b:%g c:%g ",
+										  THEKERNEL->planner->acceleration, THEKERNEL->planner->z_acceleration, THEKERNEL->planner->a_acceleration,
+										  THEKERNEL->planner->b_acceleration, THEKERNEL->planner->c_acceleration );
+                }
+				gcode->add_nl = true;
             }
             break;
             case 205:{ // M205 Xnnn - set junction deviation, Z - set Z junction deviation, Snnn - Set minimum planner speed

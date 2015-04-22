@@ -968,25 +968,70 @@ void Endstops::on_gcode_received(void *argument)
     } else if (gcode->has_m) {
         switch (gcode->m) {
             case 119: {
-                for (int i = 0; i < 12; ++i) {
-                    if(this->pins[i].connected())
-                        gcode->stream->printf("%s:%d ", endstop_names[i], this->pins[i].get());
-                }
+            	if(THEKERNEL->use_json) {
+            		bool use_comma = false;
+            		for (int i = 0; i < 12; ++i) {
+            			if(this->pins[i].connected()) {
+            				if(use_comma) {
+            					gcode->stream->printf(",\"%s\":%d", endstop_names[i], this->pins[i].get());
+            				} else {
+            					gcode->stream->printf("{\"M119\":{\"%s\":%d", endstop_names[i], this->pins[i].get()); use_comma = true;
+            				}
+            			}
+            		}
+            		if(use_comma) gcode->stream->printf("}}");
+            	} else {
+					for (int i = 0; i < 12; ++i) {
+						if(this->pins[i].connected())
+							gcode->stream->printf("%s:%d ", endstop_names[i], this->pins[i].get());
+					}
+            	}
                 gcode->add_nl= true;
                 gcode->mark_as_taken();
             }
             break;
 
-            case 206: // M206 - set homing offset
+            case 206: { // M206 - set homing offset
                 if (gcode->has_letter('X')) home_offset[0] = gcode->get_value('X');
                 if (gcode->has_letter('Y')) home_offset[1] = gcode->get_value('Y');
                 if (gcode->has_letter('Z')) home_offset[2] = gcode->get_value('Z');
                 if (gcode->has_letter('A')) home_offset[3] = gcode->get_value('A');
 				if (gcode->has_letter('B')) home_offset[4] = gcode->get_value('B');
 				if (gcode->has_letter('C')) home_offset[5] = gcode->get_value('C');
-                gcode->stream->printf("X %5.3f Y %5.3f Z %5.3f A %5.3f B %5.3f C %5.3f\n", home_offset[0], home_offset[1], home_offset[2], home_offset[3], home_offset[4], home_offset[5]);
-                gcode->mark_as_taken();
-                break;
+				if(THEKERNEL->use_json) {
+					gcode->stream->printf("{\"M206\":{\"X\":%5.3f,\"Y\":%5.3f,\"Z\":%5.3f",       home_offset[0], home_offset[1], home_offset[2] );
+					gcode->stream->printf(          ",\"A\":%5.3f,\"B\":%5.3f,\"C\":%5.3f}}\r\n", home_offset[3], home_offset[4], home_offset[5] );
+				} else {
+					gcode->stream->printf("X %5.3f Y %5.3f Z %5.3f A %5.3f B %5.3f C %5.3f\n", home_offset[0], home_offset[1], home_offset[2], home_offset[3], home_offset[4], home_offset[5]);
+				}
+				gcode->mark_as_taken();
+            }
+            break;
+
+            case 210: {
+            	if (gcode->has_letter('X')) fast_rates[0] = gcode->get_value('X');
+            	if (gcode->has_letter('Y')) fast_rates[1] = gcode->get_value('Y');
+            	if (gcode->has_letter('Z')) fast_rates[2] = gcode->get_value('Z');
+            	if (gcode->has_letter('A')) fast_rates[3] = gcode->get_value('A');
+            	if (gcode->has_letter('B')) fast_rates[4] = gcode->get_value('B');
+            	if (gcode->has_letter('C')) fast_rates[5] = gcode->get_value('C');
+            	if (gcode->has_letter('x')) slow_rates[0] = gcode->get_value('x');
+				if (gcode->has_letter('y')) slow_rates[1] = gcode->get_value('y');
+				if (gcode->has_letter('z')) slow_rates[2] = gcode->get_value('z');
+				if (gcode->has_letter('a')) slow_rates[3] = gcode->get_value('a');
+				if (gcode->has_letter('b')) slow_rates[4] = gcode->get_value('b');
+				if (gcode->has_letter('c')) slow_rates[5] = gcode->get_value('c');
+				if(THEKERNEL->use_json) {
+					gcode->stream->printf("{\"M210\":{\"X\":%g,\"Y\":%g,\"Z\":%g", fast_rates[0], fast_rates[1], fast_rates[2] );
+					gcode->stream->printf(",\"A\":%g,\"B\":%g,\"C\":%g,\"x\":%g,\"y\":%g", fast_rates[3], fast_rates[4], fast_rates[5], slow_rates[0], slow_rates[1] );
+					gcode->stream->printf(",\"z\":%g,\"a\":%g,\"b\":%g,\"c\":%g}}\r\n", slow_rates[2], slow_rates[3], slow_rates[4], slow_rates[5] );
+				} else {
+					gcode->stream->printf("X:%g Y:%g Z:%g A:%g B:%g C:%g\n", fast_rates[0], fast_rates[1], fast_rates[2], fast_rates[3], fast_rates[4], fast_rates[5]);
+            		gcode->stream->printf("x:%g y:%g z:%g a:%g b:%g c:%g\n", slow_rates[0], slow_rates[1], slow_rates[2], slow_rates[3], slow_rates[4], slow_rates[5]);
+				}
+            	gcode->mark_as_taken();
+            }
+            break;
 
             case 306: // Similar to M206 and G92 but sets Homing offsets based on current position, Would be M207 but that is taken
                 {

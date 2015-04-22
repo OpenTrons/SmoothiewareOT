@@ -80,7 +80,7 @@ void CurrentControl::on_module_loaded()
 void CurrentControl::on_gcode_received(void *argument)
 {
     Gcode *gcode = static_cast<Gcode*>(argument);
-    char alpha[8] = { 'X', 'Y', 'Z', 'E', 'A', 'B', 'C', 'D' };
+    char alpha[8] = { 'X', 'Y', 'Z', 'A', 'B', 'C', 'D', 'E' };
     if (gcode->has_m) {
         if (gcode->m == 907) {
             for (int i = 0; i < 8; i++) {
@@ -89,6 +89,19 @@ void CurrentControl::on_gcode_received(void *argument)
                     this->digipot->set_current(i, c);
                 }
             }
+            if(THEKERNEL->use_json) {
+            	gcode->stream->printf("{\"M907\":{\"%c\":%1.5f,\"%c\":%1.5f,",      alpha[0],this->digipot->get_current(0), alpha[1], this->digipot->get_current(1) );
+            	gcode->stream->printf("\"%c\":%1.5f,\"%c\":%1.5f,\"%c\":%1.5f,",    alpha[2],this->digipot->get_current(2), alpha[3], this->digipot->get_current(3), alpha[4], this->digipot->get_current(4) );
+            	gcode->stream->printf("\"%c\":%1.5f,\"%c\":%1.5f,\"%c\":%1.5f}}\r", alpha[5],this->digipot->get_current(5), alpha[6], this->digipot->get_current(6), alpha[7], this->digipot->get_current(7) );
+            } else {
+				for (int i = 0; i < 8; i++) {
+					float c = this->digipot->get_current(i);
+					if(c >= 0)
+						gcode->stream->printf("%c:%1.5f ", alpha[i], c);
+				}
+            }
+			gcode->stream->printf("\n");
+
 
         } else if(gcode->m == 500 || gcode->m == 503) {
             gcode->stream->printf(";Motor currents:\nM907 ");
