@@ -724,7 +724,6 @@ void Endstops::do_homing_cartesian(char axes_to_move, char abc_axes_to_move)
 
     // Homing is done
     this->status = NOT_HOMING;
-    THEKERNEL->feedback->finished_homing(axes_to_move, abc_axes_to_move);
 }
 
 void Endstops::wait_for_homed_corexy(int axis)
@@ -963,6 +962,8 @@ void Endstops::on_gcode_received(void *argument)
 
             // if limit switches are enabled we must back off endstop after setting home
             back_off_home(axes_to_move, abc_axes_to_move);
+
+            THEKERNEL->feedback->finished_homing(axes_to_move, abc_axes_to_move);
         }
 
     } else if (gcode->has_m) {

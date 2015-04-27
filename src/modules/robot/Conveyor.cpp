@@ -221,7 +221,7 @@ void Conveyor::queue_head_block()
 	if(DEBUG) THEKERNEL->streams->printf("conveyor::queue_head_block... full: %i, halted:%i\r\n", queue.is_full(), halted);
     while (queue.is_full()) {
 
-    	THEKERNEL->feedback->machine_state = 2;
+    	if(THEKERNEL->feedback->machine_state!=4) THEKERNEL->feedback->machine_state = 2;
 
         ensure_running();
         THEKERNEL->call_event(ON_IDLE, this);
