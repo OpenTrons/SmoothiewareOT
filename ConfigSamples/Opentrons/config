@@ -2,11 +2,25 @@
 # Robot module configurations : general handling of movement G-codes and slicing into moves
 version                                      v1.0.3b           # Version of this file
 
+z_axis_max_speed                  2000      # mm/min
+gamma_max_rate                    2000.0    # mm/min
+psi_min_endstop                   1.27^!
+
+# HOMING CONFIGS note: min needs to align with retract eg:( _min -3 ==> _homing_retract --> 3 )
+# _homing_retract has a conversion factor of "steps per mm"
+alpha_min                         -3        # mm
+beta_min                          -3
+gamma_min                         -3
+chi_min                           -3
+psi_min                           -3
+alpha_homing_retract              237.6    # --> 3 MM
+beta_homing_retract               238.5
+gamma_homing_retract              3206.1
+chi_homing_retract                4800
+psi_homing_retract                4800
+
 alpha_fast_homing_rate_mm_s       35        # feedrates in mm/second
 beta_fast_homing_rate_mm_s        35
 gamma_fast_homing_rate_mm_s       20
 chi_fast_homing_rate_mm_s         7
 psi_fast_homing_rate_mm_s         7
-z_axis_max_speed                  2000      # mm/min
-gamma_max_rate                    2000.0    # mm/min
-psi_min_endstop                   1.27^!
