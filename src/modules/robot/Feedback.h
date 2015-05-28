@@ -27,6 +27,7 @@ public:
 	void on_gcode_received(void *argument);
 	void flash_stat(int state);
 	void finished_homing(char axes_to_move, char abc_axes_to_move);
+	bool include_stat();
 
 	int machine_state;
 	int machine_state_ticker;
@@ -34,8 +35,8 @@ public:
 	int machine_state_one_trip;
 	bool auto_stat;
 
-	float position[6];
-	float position_last[6];
+	float positions[6];
+	float positions_last[6];
 	int32_t cumulative_steps[6];
 	int32_t cumulative_steps_last[6];
 	float steps_per_mm[6];

@@ -275,9 +275,9 @@ void Endstops::on_config_reload(void *argument)
     this->slow_rates[0] =  THEKERNEL->config->value(alpha_slow_homing_rate_checksum     )->by_default(792 )->as_number() / STEPS_PER_MM(0);
     this->slow_rates[1] =  THEKERNEL->config->value(beta_slow_homing_rate_checksum      )->by_default(795 )->as_number() / STEPS_PER_MM(1);
     this->slow_rates[2] =  THEKERNEL->config->value(gamma_slow_homing_rate_checksum     )->by_default(2137.4f )->as_number() / STEPS_PER_MM(2);
-    this->retract_mm[0] =  THEKERNEL->config->value(alpha_homing_retract_checksum       )->by_default(396  )->as_number() / STEPS_PER_MM(0);
-    this->retract_mm[1] =  THEKERNEL->config->value(beta_homing_retract_checksum        )->by_default(397.5f  )->as_number() / STEPS_PER_MM(1);
-    this->retract_mm[2] =  THEKERNEL->config->value(gamma_homing_retract_checksum       )->by_default(5343.5f )->as_number() / STEPS_PER_MM(2);
+    this->retract_mm[0] =  THEKERNEL->config->value(alpha_homing_retract_checksum       )->by_default(237.6f  )->as_number() / STEPS_PER_MM(0); //396 --> 5mm
+    this->retract_mm[1] =  THEKERNEL->config->value(beta_homing_retract_checksum        )->by_default(238.5f  )->as_number() / STEPS_PER_MM(1); //397.5 --> 5mm
+    this->retract_mm[2] =  THEKERNEL->config->value(gamma_homing_retract_checksum       )->by_default(3206.1f )->as_number() / STEPS_PER_MM(2); //5232.5 --> 5mm
 
     this->fast_rates[3] =  THEKERNEL->config->value(chi_fast_homing_rate_checksum     	)->by_default(6000  )->as_number() / STEPS_PER_MM(3);
 	this->fast_rates[4] =  THEKERNEL->config->value(psi_fast_homing_rate_checksum      	)->by_default(6000  )->as_number() / STEPS_PER_MM(4);
@@ -285,9 +285,9 @@ void Endstops::on_config_reload(void *argument)
 	this->slow_rates[3] =  THEKERNEL->config->value(chi_slow_homing_rate_checksum     	)->by_default(3000  )->as_number() / STEPS_PER_MM(3);
 	this->slow_rates[4] =  THEKERNEL->config->value(psi_slow_homing_rate_checksum      	)->by_default(3000  )->as_number() / STEPS_PER_MM(4);
 	this->slow_rates[5] =  THEKERNEL->config->value(omega_slow_homing_rate_checksum     )->by_default(3000  )->as_number() / STEPS_PER_MM(5);
-	this->retract_mm[3] =  THEKERNEL->config->value(chi_homing_retract_checksum       	)->by_default(8000 )->as_number() / STEPS_PER_MM(3);
-	this->retract_mm[4] =  THEKERNEL->config->value(psi_homing_retract_checksum        	)->by_default(8000 )->as_number() / STEPS_PER_MM(4);
-	this->retract_mm[5] =  THEKERNEL->config->value(omega_homing_retract_checksum       )->by_default(8000 )->as_number() / STEPS_PER_MM(5);
+	this->retract_mm[3] =  THEKERNEL->config->value(chi_homing_retract_checksum       	)->by_default(4800 )->as_number() / STEPS_PER_MM(3); //8000 --> 5mm
+	this->retract_mm[4] =  THEKERNEL->config->value(psi_homing_retract_checksum        	)->by_default(4800 )->as_number() / STEPS_PER_MM(4); //8000 --> 5mm
+	this->retract_mm[5] =  THEKERNEL->config->value(omega_homing_retract_checksum       )->by_default(4800 )->as_number() / STEPS_PER_MM(5); //8000 --> 5mm
 
 
     // newer mm based config values override the old ones, convert to steps/mm and steps, defaults to what was set in the older config settings above
@@ -343,13 +343,13 @@ void Endstops::on_config_reload(void *argument)
 
 
 
-    this->homing_position[0]        =  this->home_direction[0] ? THEKERNEL->config->value(alpha_min_checksum)->by_default(-5)->as_number() : THEKERNEL->config->value(alpha_max_checksum)->by_default(200)->as_number();
-    this->homing_position[1]        =  this->home_direction[1] ? THEKERNEL->config->value(beta_min_checksum )->by_default(-5)->as_number() : THEKERNEL->config->value(beta_max_checksum )->by_default(200)->as_number();
-    this->homing_position[2]        =  this->home_direction[2] ? THEKERNEL->config->value(gamma_min_checksum)->by_default(-5)->as_number() : THEKERNEL->config->value(gamma_max_checksum)->by_default(200)->as_number();
+    this->homing_position[0]        =  this->home_direction[0] ? THEKERNEL->config->value(alpha_min_checksum)->by_default(-3)->as_number() : THEKERNEL->config->value(alpha_max_checksum)->by_default(200)->as_number();
+    this->homing_position[1]        =  this->home_direction[1] ? THEKERNEL->config->value(beta_min_checksum )->by_default(-3)->as_number() : THEKERNEL->config->value(beta_max_checksum )->by_default(200)->as_number();
+    this->homing_position[2]        =  this->home_direction[2] ? THEKERNEL->config->value(gamma_min_checksum)->by_default(-3)->as_number() : THEKERNEL->config->value(gamma_max_checksum)->by_default(200)->as_number();
 
-    this->homing_position[3]        =  this->home_direction[3] ? THEKERNEL->config->value(chi_min_checksum  )->by_default(-5)->as_number() : THEKERNEL->config->value(chi_max_checksum  )->by_default(30)->as_number();
-    this->homing_position[4]        =  this->home_direction[4] ? THEKERNEL->config->value(psi_min_checksum  )->by_default(-5)->as_number() : THEKERNEL->config->value(psi_max_checksum  )->by_default(30)->as_number();
-    this->homing_position[5]        =  this->home_direction[5] ? THEKERNEL->config->value(omega_min_checksum)->by_default(-5)->as_number() : THEKERNEL->config->value(omega_max_checksum)->by_default(30)->as_number();
+    this->homing_position[3]        =  this->home_direction[3] ? THEKERNEL->config->value(chi_min_checksum  )->by_default(-3)->as_number() : THEKERNEL->config->value(chi_max_checksum  )->by_default(30)->as_number();
+    this->homing_position[4]        =  this->home_direction[4] ? THEKERNEL->config->value(psi_min_checksum  )->by_default(-3)->as_number() : THEKERNEL->config->value(psi_max_checksum  )->by_default(30)->as_number();
+    this->homing_position[5]        =  this->home_direction[5] ? THEKERNEL->config->value(omega_min_checksum)->by_default(-3)->as_number() : THEKERNEL->config->value(omega_max_checksum)->by_default(30)->as_number();
 
 
 
