@@ -37,6 +37,7 @@ class Endstops : public Module{
         void on_get_public_data(void* argument);
         void on_set_public_data(void* argument);
         void on_idle(void *argument);
+        void on_halt(void *);
 
         float homing_position[6];
         float home_offset[6];
@@ -54,6 +55,8 @@ class Endstops : public Module{
 
         bool 	homing_enabled[6];
 
+        bool running;
+        bool halt;
 
         struct {
             bool is_corexy:1;

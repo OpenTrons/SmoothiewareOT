@@ -864,6 +864,7 @@ void Robot::on_gcode_received(void *argument)
 					if (gcode->has_letter('C')) n += 8;
 
 					if(n>0) {
+						//TODO: refactor this w/"strcat"
 						gcode->stream->printf("{\"M198\":{");
 						if(n==1 ||n==3 ||n==5 ||n==7 ||n==9 ||n==11||n==13||n==15) gcode->stream->printf("\"S\":%g", this->seek_rate); use_comma = true;
 						if(n==2 ||n==3 ||n==6 ||n==7 ||n==10||n==11||n==14||n==15){

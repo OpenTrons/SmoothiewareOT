@@ -166,7 +166,7 @@ void StepperMotor::move( bool direction, unsigned int steps )
 
 }
 
-// Set the speed at which this steper moves
+// Set the speed at which this stepper moves
 void StepperMotor::set_speed( float speed )
 {
 

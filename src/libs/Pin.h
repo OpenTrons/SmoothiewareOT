@@ -38,6 +38,10 @@ class Pin {
             return this;
         }
 
+        inline std::string get_string(){
+        	return str_pin;
+        }
+
         Pin* as_open_drain(void);
 
         Pin* as_repeater(void);
@@ -69,6 +73,8 @@ class Pin {
         bool inverting;
         char port_number;
         unsigned char pin;
+
+        std::string str_pin;
 };
 
 

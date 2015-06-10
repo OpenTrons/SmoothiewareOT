@@ -95,6 +95,24 @@ float Gcode::get_value( char letter, char **ptr ) const
     return 0;
 }
 
+string Gcode::get_string( char letter ) const
+{
+	for(size_t i = 1; i < strlen(command); i++) {
+		if (letter == this->command[i]){
+			string r = "";
+			for(size_t n = i+1; n<strlen(command); n++){
+				if ( (this->command[n] >= 'A' && this->command[n] <='Z') || this->command[n] == ' ') {
+					return r;
+				}
+				const char cc = this->command[n];
+				r+=this->command[n];
+			}
+			return r;
+		}
+	}
+	return "";
+}
+
 int Gcode::get_int( char letter, char **ptr ) const
 {
     const char *cs = command;

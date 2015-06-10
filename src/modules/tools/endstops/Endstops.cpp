@@ -194,6 +194,7 @@ enum{
 
 Endstops::Endstops()
 {
+	this->halt = false;
     this->status = NOT_HOMING;
     home_offset[0] = 0.0F;
     home_offset[1] = 0.0F;
@@ -229,6 +230,7 @@ void Endstops::on_module_loaded()
     register_for_event(ON_GCODE_RECEIVED);
     register_for_event(ON_GET_PUBLIC_DATA);
     register_for_event(ON_SET_PUBLIC_DATA);
+    register_for_event(ON_HALT);
 
     THEKERNEL->slow_ticker->attach( THEKERNEL->stepper->get_acceleration_ticks_per_second() , this, &Endstops::acceleration_tick );
 
@@ -438,6 +440,7 @@ void Endstops::on_idle(void *argument)
 
     }else if(this->status != NOT_HOMING) {
         // don't check while homing
+    	THEKERNEL->call_event(ON_MAIN_LOOP);
         return;
     }
 
@@ -482,6 +485,26 @@ void Endstops::on_idle(void *argument)
 				}
 			}
 		}
+	}
+}
+
+void Endstops::on_halt(void *argument)
+{
+	if(argument == nullptr) {
+		//do halt
+		this->halt = true;
+		this->running = false;
+		for(int i=0; i<6; i++){
+			STEPPER[i]->move(0,0);
+			//STEPPER[i]->signal_move_finished();
+		}
+		this->status = NOT_HOMING;
+		THEKERNEL->feedback->machine_state = 0;
+
+
+	}else{
+		//undo halt
+		this->halt = false;
 	}
 }
 
@@ -557,24 +580,25 @@ void Endstops::wait_for_homed(char axes_to_move, char abc_axes_to_move)
 {
 	if(DEBUG) THEKERNEL->streams->printf("wait_for_homed called\r\n");
 	bool called_once = false;
-    bool running = true;
+    this->running = true;
     unsigned int debounce[6] = {0, 0, 0, 0, 0, 0};
-    while (running) {
-        running = false;
+    while (this->running) {
+        this->running = false;
         THEKERNEL->call_event(ON_IDLE);
+        if(halt)return;
         for ( int c = X_AXIS; c <= Z_AXIS; c++ ) {
             if ( ( axes_to_move >> c ) & 1 ) {
                 if ( this->pins[c + (this->home_direction[c] ? 0 : 3)].get() ) {
                     if ( debounce[c] < debounce_count ) {
                         debounce[c]++;
-                        running = true;
+                        this->running = true;
                     } else if ( STEPPER[c]->is_moving() ) {
                         STEPPER[c]->move(0, 0);
                         axes_to_move &= ~(1<<c); // no need to check it again
                     }
                 } else {
                     // The endstop was not hit yet
-                    running = true;
+                    this->running = true;
                     debounce[c] = 0;
                 }
             }
@@ -587,14 +611,14 @@ void Endstops::wait_for_homed(char axes_to_move, char abc_axes_to_move)
 				if ( this->pins[(c+3) + (this->home_direction[c] ? 0 : 3)].get() ) {
 					if ( debounce[c] < debounce_count ) {
 						debounce[c]++;
-						running = true;
+						this->running = true;
 					} else if ( STEPPER[c]->is_moving() ) {
 						STEPPER[c]->move(0, 0);
 						abc_axes_to_move &= ~(1<<(c-3)); // no need to check it again
 					}
 				} else {
 					// The endstop was not hit yet
-					running = true;
+					this->running = true;
 					debounce[c] = 0;
 				}
 			}
@@ -635,6 +659,7 @@ void Endstops::do_homing_cartesian(char axes_to_move, char abc_axes_to_move)
     this->wait_for_homed(axes_to_move, abc_axes_to_move);
 
     // Move back a small distance
+    if(halt) return;
     this->status = MOVING_BACK;
     bool inverted_dir;
     for ( int c = X_AXIS; c <= Z_AXIS; c++ ) {
@@ -689,7 +714,7 @@ void Endstops::do_homing_cartesian(char axes_to_move, char abc_axes_to_move)
 
     // Wait for all axes to have homed
     this->wait_for_homed(axes_to_move, abc_axes_to_move);
-
+    if(halt) return;
     if (this->is_delta || this->is_scara) {
         // move for soft trim
         this->status = MOVING_BACK;
@@ -729,15 +754,15 @@ void Endstops::do_homing_cartesian(char axes_to_move, char abc_axes_to_move)
 void Endstops::wait_for_homed_corexy(int axis)
 {
 	if(DEBUG) THEKERNEL->streams->printf("wait_for_homed_corexy called\r\n");
-    bool running = true;
+    this->running = true;
     unsigned int debounce[3] = {0, 0, 0};
-    while (running) {
-        running = false;
+    while (this->running) {
+        this->running = false;
         THEKERNEL->call_event(ON_IDLE);
         if ( this->pins[axis + (this->home_direction[axis] ? 0 : 3)].get() ) {
             if ( debounce[axis] < debounce_count ) {
                 debounce[axis] ++;
-                running = true;
+                this->running = true;
             } else {
                 // turn both off if running
                 if (STEPPER[X_AXIS]->is_moving()) STEPPER[X_AXIS]->move(0, 0);
@@ -745,7 +770,7 @@ void Endstops::wait_for_homed_corexy(int axis)
             }
         } else {
             // The endstop was not hit yet
-            running = true;
+            this->running = true;
             debounce[axis] = 0;
         }
     }
@@ -826,14 +851,14 @@ void Endstops::do_homing_corexy(char axes_to_move)
         STEPPER[motor]->set_speed(0); // need to allow for more ground covered when moving diagonally
         STEPPER[motor]->move(dir, 10000000);
         // wait until either X or Y hits the endstop
-        bool running= true;
-        while (running) {
+        this->running= true;
+        while (this->running) {
             THEKERNEL->call_event(ON_IDLE);
             for(int m=X_AXIS;m<=Y_AXIS;m++) {
                 if(this->pins[m + (this->home_direction[m] ? 0 : 3)].get()) {
                     // turn off motor
                     if(STEPPER[motor]->is_moving()) STEPPER[motor]->move(0, 0);
-                    running= false;
+                    this->running= false;
                     break;
                 }
             }
@@ -989,6 +1014,75 @@ void Endstops::on_gcode_received(void *argument)
             	}
                 gcode->add_nl= true;
                 gcode->mark_as_taken();
+            }
+            break;
+            case 120: {
+
+/*
+    this->pins[0].from_string( THEKERNEL->config->value(alpha_min_endstop_checksum          )->by_default("1.24^!" )->as_string())->as_input();
+    this->pins[1].from_string( THEKERNEL->config->value(beta_min_endstop_checksum           )->by_default("1.26^!" )->as_string())->as_input();
+    this->pins[2].from_string( THEKERNEL->config->value(gamma_min_endstop_checksum          )->by_default("1.28^!" )->as_string())->as_input();
+    this->pins[3].from_string( THEKERNEL->config->value(alpha_max_endstop_checksum          )->by_default("nc" )->as_string())->as_input();
+    this->pins[4].from_string( THEKERNEL->config->value(beta_max_endstop_checksum           )->by_default("nc" )->as_string())->as_input();
+    this->pins[5].from_string( THEKERNEL->config->value(gamma_max_endstop_checksum          )->by_default("nc" )->as_string())->as_input();
+
+    this->pins[6].from_string( THEKERNEL->config->value(chi_min_endstop_checksum          	)->by_default("1.25^!" )->as_string())->as_input();
+	this->pins[7].from_string( THEKERNEL->config->value(psi_min_endstop_checksum           	)->by_default("nc" )->as_string())->as_input();
+	this->pins[8].from_string( THEKERNEL->config->value(omega_min_endstop_checksum          )->by_default("nc" )->as_string())->as_input();
+	this->pins[9].from_string( THEKERNEL->config->value(chi_max_endstop_checksum          	)->by_default("nc" )->as_string())->as_input();
+	this->pins[10].from_string( THEKERNEL->config->value(psi_max_endstop_checksum           )->by_default("nc" )->as_string())->as_input();
+	this->pins[11].from_string( THEKERNEL->config->value(omega_max_endstop_checksum         )->by_default("nc" )->as_string())->as_input();
+
+ ERROR: calling value after config cache has been cleared
+ */
+
+            	if (gcode->has_letter('X')) this->pins[0].from_string( gcode->get_string('X'))->as_input();
+            	if (gcode->has_letter('Y')) this->pins[1].from_string( gcode->get_string('Y'))->as_input();
+            	if (gcode->has_letter('Z')) this->pins[2].from_string( gcode->get_string('Z'))->as_input();
+            	if (gcode->has_letter('x')) this->pins[3].from_string( gcode->get_string('x'))->as_input();
+            	if (gcode->has_letter('y')) this->pins[4].from_string( gcode->get_string('y'))->as_input();
+            	if (gcode->has_letter('z')) this->pins[5].from_string( gcode->get_string('z'))->as_input();
+            	if (gcode->has_letter('A')) this->pins[6].from_string( gcode->get_string('A'))->as_input();
+            	if (gcode->has_letter('B')) this->pins[7].from_string( gcode->get_string('B'))->as_input();
+            	if (gcode->has_letter('C')) this->pins[8].from_string( gcode->get_string('C'))->as_input();
+            	if (gcode->has_letter('a')) this->pins[9].from_string( gcode->get_string('a'))->as_input();
+            	if (gcode->has_letter('b')) this->pins[10].from_string( gcode->get_string('b'))->as_input();
+            	if (gcode->has_letter('e')) this->pins[11].from_string( gcode->get_string('e'))->as_input();
+
+            	Pin dummy_pin;
+				dummy_pin.from_string("nc")->as_input();
+				for(int i=0; i<3; i++) {
+					if(this->pins[i].equals(dummy_pin))
+						homing_enabled[i] = false;
+					else
+						homing_enabled[i] = true;
+				}
+				for(int i=0; i<3; i++) {
+					if(this->pins[i+6].equals(dummy_pin))
+						homing_enabled[i+3] = false;
+					else
+						homing_enabled[i+3] = true;
+				}
+
+            	char str_pins[160];
+            	strcpy(str_pins,"{\"M120\":{");
+            	bool comma = false;
+            	for(int i=0; i<12; i++) {
+            		if(comma) strcat(str_pins,",");
+            		char ax[10];
+            		if(i<3)	snprintf(ax, sizeof(ax), "\"%c\":\"",  i   +'X');
+            		else if(i<6) snprintf(ax, sizeof(ax), "\"%c\":\"", (i-3)+'x');
+            		else if(i<9) snprintf(ax, sizeof(ax), "\"%c\":\"", (i-6)+'A');
+            		else    snprintf(ax, sizeof(ax), "\"%c\":\"", (i-9)+'a');
+            		const char* c_ax = ax;
+            		strcat(str_pins,c_ax);
+            		strcat(str_pins, this->pins[i].get_string().c_str());
+            		strcat(str_pins,"\"");
+            		if(comma==false) comma = true;
+            	}
+            	strcat(str_pins, "}}\r\n");
+            	gcode->stream->printf(str_pins);
+            	gcode->mark_as_taken();
             }
             break;
 
