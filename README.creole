@@ -12,6 +12,67 @@ SmoothiewareABC is the Opentrons' fork of the Smoothieware project's Smoothie fi
 Copy the file FirmwareBin/firmware.bin and ConfigSamples/Opentrons/config to the sdcard and reset.
 
 
-
-
 Smoothieware documentation can be found here : [[http://smoothieware.org/]]
+
+
+==Opentrons Commands - list of some of some of the command changes
+
+
+
+feedback.cpp
+* **M62 (Pn Sn)**:		Start feedback. Optional Pn and Sn are not used and unlikely to be used, so they will be removed soon
+
+* **M63**:			Stop feedback
+
+
+
+robot.cpp
+* **M114**:			Show current position of all axes, XYZABC will be the last requested position, whereas xyzabc is actual current position of the actuators.
+
+Change from Smoothieware: Added ABC axes, actual current position of the actuators now lower case of axis letter, JSON format
+
+* **M198 (Sn An Bn Cn)**:	Set feed rate.
+
+Sn => X, Y, Z feed rate, n float
+An => A feed rate, n float
+Bn => A feed rate, n float
+Cn => A feed rate, n float
+
+* **M199 (Sn An Bn Cn)**:	Set seek rate.
+
+Sn => X, Y, Z seek rate, n float
+An => A seek rate, n float
+Bn => A seek rate, n float
+Cn => A seek rate, n float
+
+*	**M203 (Xn Yn Zn An Bn Cn)**:	Set max feedrates. Same as Smoothieware but adjusted to output in JSON format and include A, B, C.
+
+* **M204 (Xn Yn Zn An Bn Cn)**:	Set acceleration. Same as Smoothieware but adjusted to output in JSON format and include A, B, C.
+
+
+
+endstops.cpp
+* **M28 XYZABC**:	Changed to include ABC axes and can be interrupted with other commands, such as M112
+
+* **M119**:		Show limit switch status. Same as Smoothieware but adjusted to output in JSON format
+
+* **M120 (Xn Yn Zn xn yn zn An Bn Cn an bn en)**:		Show endstop pins with option to set endstop pin for given axis as min (upper case letter) or max (lower case letter). This is useful for enabling or disabling homing on a given axis. Note: e is used for c max because “nc” is the value to set endstop when the pin is not used. This could possibly be changed, but max c is not expected to be used for a long time.
+
+*	**M206 (Xn Yn Zn An Bn Cn)**:		Show homing offsets with the option to set the offset for each axis.
+
+*	**M210 (Xn Yn Zn An Bn Cn xn yn zn an bn cn)**:	Show homing fast rates and slow rates with the option to set the rate for each axis. Upper case corresponds to fast rate and lower case corresponds to slow rate.
+
+
+
+currentcontrol.cpp
+*	**M907 (Xn Yn Zn An Bn Cn Dn En)**:	Show current control for each axis with the option to set current for each axis. Same as Smoothieware but adjusted to output in JSON format.
+
+
+
+simpleshell.cpp
+*	**ot_get <settings>**:	Similar to config-get but for showing settings as they are, not from config file. List of settings available to show not done yet, command not fully implemented. M-code commands listed in this document have priority.
+
+*	**ot_set <setting> <value>**:	Similar to config-set but for changing settings on the fly, not in config file. List of settings available to change not done yet, command not fully implemented. M-code commands listed in this document have priority.
+
+
+
