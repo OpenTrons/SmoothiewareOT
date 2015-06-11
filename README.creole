@@ -15,7 +15,7 @@ Copy the file FirmwareBin/firmware.bin and ConfigSamples/Opentrons/config to the
 Smoothieware documentation can be found here : [[http://smoothieware.org/]]
 
 
-==Opentrons Commands - list of some of some of the command changes
+==Opentrons Commands - list of some command changes
 
 
 
