@@ -454,7 +454,11 @@ void Endstops::on_idle(void *argument)
                 while(this->pins[n].get()) {
                     if ( ++debounce >= debounce_count ) {
                         // endstop triggered
-                        THEKERNEL->streams->printf("Limit switch %s was hit - reset or M999 required\n", endstop_names[n]);
+                        if(THEKERNEL->use_json) {
+                        	THEKERNEL->streams->printf("{\"limit\":%s}\r\n", endstop_names[n]);
+                        } else {
+                        	THEKERNEL->streams->printf("Limit switch %s was hit - reset or M999 required\n", endstop_names[n]);
+                        }
                         if(DEBUG) THEKERNEL->streams->printf("called UP here!... n:%i, c:%i, i:%i\n", n, c, i);
                         this->status= LIMIT_TRIGGERED;
                         // disables heaters and motors, ignores incoming Gcode and flushes block queue
@@ -475,7 +479,11 @@ void Endstops::on_idle(void *argument)
 				while(this->pins[n].get()) {
 					if ( ++debounce >= debounce_count ) {
 						// endstop triggered
-						THEKERNEL->streams->printf("Limit switch %s was hit - reset or M999 required\n", endstop_names[n]);
+						if(THEKERNEL->use_json) {
+							THEKERNEL->streams->printf("{\"limit\":%s}\r\n", endstop_names[n]);
+						} else {
+							THEKERNEL->streams->printf("Limit switch %s was hit - reset or M999 required\n", endstop_names[n]);
+						}
 						if(DEBUG) THEKERNEL->streams->printf("called DOWN here!... n:%i, c:%i, i:%i\n", n, c, i);
 						this->status= LIMIT_TRIGGERED;
 						// disables heaters and motors, ignores incoming Gcode and flushes block queue

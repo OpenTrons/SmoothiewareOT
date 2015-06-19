@@ -817,38 +817,81 @@ void Robot::on_gcode_received(void *argument)
             	if(THEKERNEL->use_json){
             		int n = 0;
             		bool use_comma = false;
-            		if (gcode->has_letter('S')) n  = 1;
-            		if (gcode->has_letter('A')) n += 2;
-            		if (gcode->has_letter('B')) n += 4;
-            		if (gcode->has_letter('C')) n += 8;
-
-            		if(n>0) {
-            			gcode->stream->printf("{\"M198\":{");
-            			if(n==1 ||n==3 ||n==5 ||n==7 ||n==9 ||n==11||n==13||n==15) gcode->stream->printf("\"S\":%g", this->feed_rate); use_comma = true;
-            			if(n==2 ||n==3 ||n==6 ||n==7 ||n==10||n==11||n==14||n==15){
-            				if(use_comma) gcode->stream->printf(",\"A\":%g", this->a_feed_rate);
-            				else 		  gcode->stream->printf( "\"A\":%g", this->a_feed_rate); use_comma = true;
-            			}
-            			if(n==4 ||n==5 ||n==6 ||n==7 ||n==12||n==14||n==15){
-							if(use_comma) gcode->stream->printf(",\"B\":%g", this->b_feed_rate);
-							else 		  gcode->stream->printf( "\"B\":%g", this->b_feed_rate); use_comma = true;
-						}
-            			if(n==8 ||n==9 ||n==10||n==11||n==12||n==13||n==14||n==15){
-							if(use_comma) gcode->stream->printf(",\"C\":%g", this->c_feed_rate);
-							else 		  gcode->stream->printf( "\"C\":%g", this->c_feed_rate);use_comma = true;
-						}
-            			gcode->stream->printf("}}");
+            		if (gcode->has_letter('S') && gcode->get_value('S')>1e-8F)
+            		{
+            			this->feed_rate = gcode->get_value('S');
+            			n += 1;
+            		}
+            		if (gcode->has_letter('A') && gcode->get_value('A')>1e-8F)
+            		{
+            			this->a_feed_rate = gcode->get_value('A');
+            			n += 2;
+            		}
+            		if (gcode->has_letter('B') && gcode->get_value('B')>1e-8F)
+            		{
+            			this->b_feed_rate = gcode->get_value('B');
+            			n += 4;
+            		}
+            		if (gcode->has_letter('C') && gcode->get_value('C')>1e-8F)
+            		{
+            			this->c_feed_rate = gcode->get_value('C');
+            			n += 8;
             		}
 
+            		gcode->stream->printf("{\"M198\":{");
+            		if( n == 0 )
+            		{
+            			gcode->stream->printf("\"S\":%g,\"A\":%g,\"B\":%g,\"C\":%g");
+            		}
+					if( n==1 || n==3 || n==5 || n==7 || n==9 || n==11 || n==13|| n==15 )
+					{
+						gcode->stream->printf("\"S\":%g", this->feed_rate);
+						use_comma = true;
+					}
+					if( n==2 || n==3 || n==6 || n==7 || n==10 || n==11 || n==14 || n==15 )
+					{
+						if(use_comma) {
+							gcode->stream->printf(",\"A\":%g", this->a_feed_rate);
+						} else {
+							gcode->stream->printf( "\"A\":%g", this->a_feed_rate);
+							use_comma = true;
+						}
+					}
+					if( n==4 || n==5 || n==6 || n==7 || n==12|| n==14 || n==15 )
+					{
+						if(use_comma) {
+							gcode->stream->printf(",\"B\":%g", this->b_feed_rate);
+						} else {
+							gcode->stream->printf( "\"B\":%g", this->b_feed_rate);
+							use_comma = true;
+						}
+					}
+					if( n==8 || n==9 || n==10 || n==11 || n==12 || n==13 || n==14 || n==15 ){
+						if(use_comma) {
+							gcode->stream->printf(",\"C\":%g", this->c_feed_rate);
+						} else {
+							gcode->stream->printf( "\"C\":%g", this->c_feed_rate);
+							use_comma = true;
+						}
+					}
+            		gcode->stream->printf("}}");
+
+
             	} else {
-            		if (gcode->has_letter('S'))
-						gcode->stream->printf("S:%g ", this->feed_rate);
-					if (gcode->has_letter('A'))
-						gcode->stream->printf("A:%g ", this->a_feed_rate);
-					if (gcode->has_letter('B'))
-						gcode->stream->printf("B:%g ", this->b_feed_rate);
-					if (gcode->has_letter('C'))
-						gcode->stream->printf("C:%g ", this->c_feed_rate);
+
+            		if (gcode->has_letter('S') && gcode->get_value('S')>1e-8F)
+            			this->feed_rate = gcode->get_value('S');
+					if (gcode->has_letter('A') && gcode->get_value('A')>1e-8F)
+						this->a_feed_rate = gcode->get_value('A');
+					if (gcode->has_letter('B') && gcode->get_value('B')>1e-8F)
+						this->b_feed_rate = gcode->get_value('B');
+					if (gcode->has_letter('C') && gcode->get_value('C')>1e-8F)
+						this->c_feed_rate = gcode->get_value('C');
+
+					gcode->stream->printf("S:%g ", this->feed_rate);
+					gcode->stream->printf("A:%g ", this->a_feed_rate);
+					gcode->stream->printf("B:%g ", this->b_feed_rate);
+					gcode->stream->printf("C:%g ", this->c_feed_rate);
             	}
 				gcode->add_nl = true;
 				gcode->mark_as_taken();
@@ -858,56 +901,96 @@ void Robot::on_gcode_received(void *argument)
             	if(THEKERNEL->use_json){
 					int n = 0;
 					bool use_comma = false;
-					if (gcode->has_letter('S')) n  = 1;
-					if (gcode->has_letter('A')) n += 2;
-					if (gcode->has_letter('B')) n += 4;
-					if (gcode->has_letter('C')) n += 8;
-
-					if(n>0) {
-						//TODO: refactor this w/"strcat"
-						gcode->stream->printf("{\"M198\":{");
-						if(n==1 ||n==3 ||n==5 ||n==7 ||n==9 ||n==11||n==13||n==15) gcode->stream->printf("\"S\":%g", this->seek_rate); use_comma = true;
-						if(n==2 ||n==3 ||n==6 ||n==7 ||n==10||n==11||n==14||n==15){
-							if(use_comma) gcode->stream->printf(",\"A\":%g", this->a_seek_rate);
-							else 		  gcode->stream->printf( "\"A\":%g", this->a_seek_rate); use_comma = true;
-						}
-						if(n==4 ||n==5 ||n==6 ||n==7 ||n==12||n==14||n==15){
-							if(use_comma) gcode->stream->printf(",\"B\":%g", this->b_seek_rate);
-							else 		  gcode->stream->printf( "\"B\":%g", this->b_seek_rate); use_comma = true;
-						}
-						if(n==8 ||n==9 ||n==10||n==11||n==12||n==13||n==14||n==15){
-							if(use_comma) gcode->stream->printf(",\"C\":%g", this->c_seek_rate);
-							else 		  gcode->stream->printf( "\"C\":%g", this->c_seek_rate); use_comma = true;
-						}
-						gcode->stream->printf("}}");
+					if (gcode->has_letter('S') && gcode->get_value('S')>1e-8F)
+					{
+						this->seek_rate = gcode->get_value('S');
+						n += 1;
+					}
+					if (gcode->has_letter('A') && gcode->get_value('A')>1e-8F)
+					{
+						this->a_seek_rate = gcode->get_value('A');
+						n += 2;
+					}
+					if (gcode->has_letter('B') && gcode->get_value('B')>1e-8F)
+					{
+						this->b_seek_rate = gcode->get_value('B');
+						n += 4;
+					}
+					if (gcode->has_letter('C') && gcode->get_value('C')>1e-8F)
+					{
+						this->c_seek_rate = gcode->get_value('C');
+						n += 8;
 					}
 
+					gcode->stream->printf("{\"M198\":{");
+					if( n == 0 )
+					{
+						gcode->stream->printf("\"S\":%g,\"A\":%g,\"B\":%g,\"C\":%g");
+					}
+					if( n==1 || n==3 || n==5 || n==7 || n==9 || n==11 || n==13|| n==15 )
+					{
+						gcode->stream->printf("\"S\":%g", this->seek_rate);
+						use_comma = true;
+					}
+					if( n==2 || n==3 || n==6 || n==7 || n==10 || n==11 || n==14 || n==15 )
+					{
+						if(use_comma) {
+							gcode->stream->printf(",\"A\":%g", this->a_seek_rate);
+						} else {
+							gcode->stream->printf( "\"A\":%g", this->a_seek_rate);
+							use_comma = true;
+						}
+					}
+					if( n==4 || n==5 || n==6 || n==7 || n==12|| n==14 || n==15 )
+					{
+						if(use_comma) {
+							gcode->stream->printf(",\"B\":%g", this->b_seek_rate);
+						} else {
+							gcode->stream->printf( "\"B\":%g", this->b_seek_rate);
+							use_comma = true;
+						}
+					}
+					if( n==8 || n==9 || n==10 || n==11 || n==12 || n==13 || n==14 || n==15 ){
+						if(use_comma) {
+							gcode->stream->printf(",\"C\":%g", this->c_seek_rate);
+						} else {
+							gcode->stream->printf( "\"C\":%g", this->c_seek_rate);
+							use_comma = true;
+						}
+					}
+					gcode->stream->printf("}}");
+
 				} else {
-					if (gcode->has_letter('S'))
-						gcode->stream->printf("S:%g ", this->seek_rate);
-					if (gcode->has_letter('A'))
-						gcode->stream->printf("A:%g ", this->a_seek_rate);
-					if (gcode->has_letter('B'))
-						gcode->stream->printf("B:%g ", this->b_seek_rate);
-					if (gcode->has_letter('C'))
-						gcode->stream->printf("C:%g ", this->c_seek_rate);
+					if (gcode->has_letter('S') && gcode->get_value('S')>0.0F)
+						this->seek_rate = gcode->get_value('S');
+					if (gcode->has_letter('A') && gcode->get_value('A')>0.0F)
+						this->a_seek_rate = gcode->get_value('A');
+					if (gcode->has_letter('B') && gcode->get_value('B')>0.0F)
+						this->b_seek_rate = gcode->get_value('B');
+					if (gcode->has_letter('C') && gcode->get_value('C')>0.0F)
+						this->c_seek_rate = gcode->get_value('C');
+
+					gcode->stream->printf("S:%g ", this->seek_rate);
+					gcode->stream->printf("A:%g ", this->a_seek_rate);
+					gcode->stream->printf("B:%g ", this->b_seek_rate);
+					gcode->stream->printf("C:%g ", this->c_seek_rate);
 				}
             	gcode->add_nl = true;
             	gcode->mark_as_taken();
             }
             break;
             case 203: { // M203 Set maximum feedrates in mm/sec
-                if (gcode->has_letter('X'))
+                if (gcode->has_letter('X') && gcode->get_value('X')>1e-8F)
                     this->max_speeds[X_AXIS] = gcode->get_value('X');
-                if (gcode->has_letter('Y'))
+                if (gcode->has_letter('Y') && gcode->get_value('Y')>1e-8F)
                     this->max_speeds[Y_AXIS] = gcode->get_value('Y');
-                if (gcode->has_letter('Z'))
+                if (gcode->has_letter('Z') && gcode->get_value('Z')>1e-8F)
                     this->max_speeds[Z_AXIS] = gcode->get_value('Z');
-                if (gcode->has_letter('A'))
+                if (gcode->has_letter('A') && gcode->get_value('A')>1e-8F)
                     alpha_stepper_motor->max_rate = gcode->get_value('A');
-                if (gcode->has_letter('B'))
+                if (gcode->has_letter('B') && gcode->get_value('B')>1e-8F)
                     beta_stepper_motor->max_rate = gcode->get_value('B');
-                if (gcode->has_letter('C'))
+                if (gcode->has_letter('C') && gcode->get_value('C')>1e-8F)
                     gamma_stepper_motor->max_rate = gcode->get_value('C');
 
                 check_max_actuator_speeds();
