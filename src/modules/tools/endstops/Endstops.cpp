@@ -455,7 +455,7 @@ void Endstops::on_idle(void *argument)
                     if ( ++debounce >= debounce_count ) {
                         // endstop triggered
                         if(THEKERNEL->use_json) {
-                        	THEKERNEL->streams->printf("{\"limit\":%s}\r\n", endstop_names[n]);
+                        	THEKERNEL->streams->printf("{\"limit\":\"%s\"}\r\n", endstop_names[n]);
                         } else {
                         	THEKERNEL->streams->printf("Limit switch %s was hit - reset or M999 required\n", endstop_names[n]);
                         }

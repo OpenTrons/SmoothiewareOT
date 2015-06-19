@@ -146,7 +146,11 @@ try_again:
 
                         }else if(!is_allowed_mcode(gcode->m)) {
                             // ignore everything, return error string to host
-                            new_message.stream->printf("!!\r\n");
+                        	if(THEKERNEL->use_json){
+                        		new_message.stream->printf("{\"!!\":\"!!\"}\r\n");
+                        	} else {
+                        		new_message.stream->printf("!!\r\n");
+                        	}
                             delete gcode;
                             continue;
                         }

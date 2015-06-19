@@ -841,36 +841,36 @@ void Robot::on_gcode_received(void *argument)
             		gcode->stream->printf("{\"M198\":{");
             		if( n == 0 )
             		{
-            			gcode->stream->printf("\"S\":%g,\"A\":%g,\"B\":%g,\"C\":%g");
+            			gcode->stream->printf("\"S\":%f,\"A\":%f,\"B\":%f,\"C\":%f", this->feed_rate, this->a_feed_rate, this->b_feed_rate, this->c_feed_rate);
             		}
 					if( n==1 || n==3 || n==5 || n==7 || n==9 || n==11 || n==13|| n==15 )
 					{
-						gcode->stream->printf("\"S\":%g", this->feed_rate);
+						gcode->stream->printf("\"S\":%f", this->feed_rate);
 						use_comma = true;
 					}
 					if( n==2 || n==3 || n==6 || n==7 || n==10 || n==11 || n==14 || n==15 )
 					{
 						if(use_comma) {
-							gcode->stream->printf(",\"A\":%g", this->a_feed_rate);
+							gcode->stream->printf(",\"A\":%f", this->a_feed_rate);
 						} else {
-							gcode->stream->printf( "\"A\":%g", this->a_feed_rate);
+							gcode->stream->printf( "\"A\":%f", this->a_feed_rate);
 							use_comma = true;
 						}
 					}
 					if( n==4 || n==5 || n==6 || n==7 || n==12|| n==14 || n==15 )
 					{
 						if(use_comma) {
-							gcode->stream->printf(",\"B\":%g", this->b_feed_rate);
+							gcode->stream->printf(",\"B\":%f", this->b_feed_rate);
 						} else {
-							gcode->stream->printf( "\"B\":%g", this->b_feed_rate);
+							gcode->stream->printf( "\"B\":%f", this->b_feed_rate);
 							use_comma = true;
 						}
 					}
 					if( n==8 || n==9 || n==10 || n==11 || n==12 || n==13 || n==14 || n==15 ){
 						if(use_comma) {
-							gcode->stream->printf(",\"C\":%g", this->c_feed_rate);
+							gcode->stream->printf(",\"C\":%f", this->c_feed_rate);
 						} else {
-							gcode->stream->printf( "\"C\":%g", this->c_feed_rate);
+							gcode->stream->printf( "\"C\":%f", this->c_feed_rate);
 							use_comma = true;
 						}
 					}
@@ -922,39 +922,39 @@ void Robot::on_gcode_received(void *argument)
 						n += 8;
 					}
 
-					gcode->stream->printf("{\"M198\":{");
+					gcode->stream->printf("{\"M199\":{");
 					if( n == 0 )
 					{
-						gcode->stream->printf("\"S\":%g,\"A\":%g,\"B\":%g,\"C\":%g");
+						gcode->stream->printf("\"S\":%f,\"A\":%f,\"B\":%f,\"C\":%f", this->seek_rate, this->a_seek_rate, this->b_seek_rate, this->c_seek_rate);
 					}
 					if( n==1 || n==3 || n==5 || n==7 || n==9 || n==11 || n==13|| n==15 )
 					{
-						gcode->stream->printf("\"S\":%g", this->seek_rate);
+						gcode->stream->printf("\"S\":%f", this->seek_rate);
 						use_comma = true;
 					}
 					if( n==2 || n==3 || n==6 || n==7 || n==10 || n==11 || n==14 || n==15 )
 					{
 						if(use_comma) {
-							gcode->stream->printf(",\"A\":%g", this->a_seek_rate);
+							gcode->stream->printf(",\"A\":%f", this->a_seek_rate);
 						} else {
-							gcode->stream->printf( "\"A\":%g", this->a_seek_rate);
+							gcode->stream->printf( "\"A\":%f", this->a_seek_rate);
 							use_comma = true;
 						}
 					}
 					if( n==4 || n==5 || n==6 || n==7 || n==12|| n==14 || n==15 )
 					{
 						if(use_comma) {
-							gcode->stream->printf(",\"B\":%g", this->b_seek_rate);
+							gcode->stream->printf(",\"B\":%f", this->b_seek_rate);
 						} else {
-							gcode->stream->printf( "\"B\":%g", this->b_seek_rate);
+							gcode->stream->printf( "\"B\":%f", this->b_seek_rate);
 							use_comma = true;
 						}
 					}
 					if( n==8 || n==9 || n==10 || n==11 || n==12 || n==13 || n==14 || n==15 ){
 						if(use_comma) {
-							gcode->stream->printf(",\"C\":%g", this->c_seek_rate);
+							gcode->stream->printf(",\"C\":%f", this->c_seek_rate);
 						} else {
-							gcode->stream->printf( "\"C\":%g", this->c_seek_rate);
+							gcode->stream->printf( "\"C\":%f", this->c_seek_rate);
 							use_comma = true;
 						}
 					}
