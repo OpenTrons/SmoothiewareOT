@@ -61,7 +61,8 @@ endif
 DEFINES += -DCHECKSUM_USE_CPP -DDEFAULT_SERIAL_BAUD_RATE=$(DEFAULT_SERIAL_BAUD_RATE)
 
 # add any modules that you do not want included in the build
-export EXCLUDED_MODULES = tools/touchprobe tools/laser tools/temperaturecontrol tools/extruder tools/spindle tools/scaracal utils/panel tools/zprobe tools/temperatureswitch tools/switch
+# tools/switch
+export EXCLUDED_MODULES = tools/touchprobe tools/laser tools/temperaturecontrol tools/extruder tools/spindle tools/scaracal utils/panel tools/zprobe tools/temperatureswitch
 # e.g for a CNC machine
 #export EXCLUDED_MODULES = tools/touchprobe tools/laser tools/temperaturecontrol tools/extruder
 

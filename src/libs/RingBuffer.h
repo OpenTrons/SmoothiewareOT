@@ -82,7 +82,7 @@ template<class kind, int length> void RingBuffer<kind, length>::get(int index, k
         j++;
         k= (k + 1) & (length - 1);
     }
-    // TODO : this checks wether we are asked a value out of range
+    // TODO : this checks whether we are asked a value out of range
     //if (k == this->head){
     //    return NULL;
     //}

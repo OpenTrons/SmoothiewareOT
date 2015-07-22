@@ -16,6 +16,7 @@ using std::string;
 #include "libs/SerialMessage.h"
 #include "libs/StreamOutput.h"
 #include "libs/StreamOutputPool.h"
+#include "modules/robot/Feedback.h"
 
 
 // Serial reading module
@@ -53,18 +54,63 @@ void SerialConsole::on_main_loop(void * argument){
     if( this->has_char('\n') ){
         string received;
         received.reserve(20);
-        while(1){
-           char c;
-           this->buffer.pop_front(c);
-           if( c == '\n' ){
-                struct SerialMessage message;
-                message.message = received;
-                message.stream = this;
-                THEKERNEL->call_event(ON_CONSOLE_LINE_RECEIVED, &message );
-                return;
-            }else{
-                received += c;
-            }
+        bool go_ahead = true;
+        if(THEKERNEL->feedback->machine_state==4 && this->buffer.size()>5){
+        	go_ahead = false;
+        	struct SerialMessage message;
+
+			int j=0;//this->buffer.tail;
+			int k=this->buffer.tail+5;
+			char c0,c1,c2,c3;
+			while(k != buffer.head){
+				this->buffer.get(j,c0);
+				if (c0=='M') {
+					this->buffer.get(j+1,c1);
+					if (c1=='1') {
+						this->buffer.get(j+2,c2);
+						if (c2=='1') {
+							this->buffer.get(j+3,c3);
+							if (c3=='2') {
+								go_ahead = true;
+								break;
+							} else {
+								j+=4;
+								if (j>buffer.size()) break;
+								k+=4;
+							}
+						} else {
+							j+=3;
+							if (j>buffer.size()) break;
+							k+=3;
+						}
+					} else {
+						j+=2;
+						if (j>buffer.size()) break;
+						k+=2;
+					}
+				} else {
+					j++;
+					if (j>buffer.size()) break;
+					k++;
+				}
+			}
+
+        }
+
+        if (go_ahead) {
+			while(1){
+			   char c;
+			   this->buffer.pop_front(c);
+			   if( c == '\n' ){
+					struct SerialMessage message;
+					message.message = received;
+					message.stream = this;
+					THEKERNEL->call_event(ON_CONSOLE_LINE_RECEIVED, &message );
+					return;
+				}else{
+					received += c;
+				}
+			}
         }
     }
 }
