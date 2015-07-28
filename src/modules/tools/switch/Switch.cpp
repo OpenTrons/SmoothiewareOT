@@ -75,7 +75,7 @@ void Switch::on_config_reload(void *argument)
 
     if(type == "pwm") this->output_type= PWM;
     else if(type == "digital") this->output_type= DIGITAL;
-    else this->output_type= PWM; // unkown type default to pwm
+    else this->output_type= PWM; // unknown type default to pwm
 
     if(this->output_pin.connected()) {
         if(this->output_type == PWM) {
