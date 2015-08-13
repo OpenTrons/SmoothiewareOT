@@ -52,7 +52,7 @@ Cn => A seek rate, n float
 
 
 endstops.cpp
-* **M28 XYZABC**:	Changed to include ABC axes and can be interrupted with other commands, such as M112
+* **M28 XYZABC**:	Changed to include ABC axes and can be interrupted with M112
 
 * **M119**:		Show limit switch status. Same as Smoothieware but adjusted to output in JSON format
 
