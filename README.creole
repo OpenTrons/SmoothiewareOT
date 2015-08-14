@@ -4,7 +4,7 @@ SmoothiewareOT is the Opentrons' fork of the Smoothieware project's Smoothie fir
 
 **!!IMPORTANT** The code is still being developed and it is important that certain configuration settings be set correctly. Check the Opentrons folder within the ConfigSamples folder for recommended config files to use.
 
-
+**!!IMPORTANT** v1.0.5 is NOT yet compatible with robot, use v1.0.4 for now
 
 
 ==Quick Start
