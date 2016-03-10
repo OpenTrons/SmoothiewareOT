@@ -41,7 +41,6 @@ Feedback::Feedback()
 	for(int i=0; i<6; i++){
 		cumulative_steps[i] = cumulative_steps_last[i] = 0;
 		positions[i] = positions_last[i] = 0.0F;
-
 	}
 }
 
@@ -173,83 +172,83 @@ uint32_t Feedback::feedback_tick( uint32_t dummy )
 		}else{
 			if (xyz == 0x1) {
 				positions[0] = ((float)this->cumulative_steps[0]/this->steps_per_mm[0]);
-				if (include_stat()) THEKERNEL->streams->printf("{\"x\":%i.%u,\"stat\":%i}\r\n",(int)positions[0],(int)(fabs(positions[0])*1000)%1000,this->machine_state);
-				else 				THEKERNEL->streams->printf("{\"x\":%i.%u}\r\n",            (int)positions[0],(int)(fabs(positions[0])*1000)%1000);
+				if (include_stat()) THEKERNEL->streams->printf("{\"x\":%i.%03u,\"stat\":%i}\r\n",(int)positions[0],(int)(fabs(positions[0])*1000)%1000,this->machine_state);
+				else 				THEKERNEL->streams->printf("{\"x\":%i.%03u}\r\n",            (int)positions[0],(int)(fabs(positions[0])*1000)%1000);
 			}
 			else if (xyz == 0x2) {
 				positions[1] = ((float)this->cumulative_steps[1]/this->steps_per_mm[1]);
-				if (include_stat()) THEKERNEL->streams->printf("{\"y\":%i.%u,\"stat\":%i}\r\n",(int)positions[1],(int)(fabs(positions[1])*1000)%1000,this->machine_state);
-				else 				THEKERNEL->streams->printf("{\"y\":%i.%u}\r\n"            ,(int)positions[1],(int)(fabs(positions[1])*1000)%1000);
+				if (include_stat()) THEKERNEL->streams->printf("{\"y\":%i.%03u,\"stat\":%i}\r\n",(int)positions[1],(int)(fabs(positions[1])*1000)%1000,this->machine_state);
+				else 				THEKERNEL->streams->printf("{\"y\":%i.%03u}\r\n"            ,(int)positions[1],(int)(fabs(positions[1])*1000)%1000);
 			}
 			else if (xyz == 0x4) {
 				positions[2] = ((float)this->cumulative_steps[2]/this->steps_per_mm[2]);
-				if (include_stat()) THEKERNEL->streams->printf("{\"z\":%i.%u,\"stat\":%i}\r\n",(int)positions[2],(int)(fabs(positions[2])*1000)%1000,this->machine_state);
-				else 				THEKERNEL->streams->printf("{\"z\":%i.%u}\r\n"            ,(int)positions[2],(int)(fabs(positions[2])*1000)%1000);
+				if (include_stat()) THEKERNEL->streams->printf("{\"z\":%i.%03u,\"stat\":%i}\r\n",(int)positions[2],(int)(fabs(positions[2])*1000)%1000,this->machine_state);
+				else 				THEKERNEL->streams->printf("{\"z\":%i.%03u}\r\n"            ,(int)positions[2],(int)(fabs(positions[2])*1000)%1000);
 			}
 			else if (xyz == 0x3) {
 				positions[0] = ((float)this->cumulative_steps[0]/this->steps_per_mm[0]);
 				positions[1] = ((float)this->cumulative_steps[1]/this->steps_per_mm[1]);
-				if (include_stat()) THEKERNEL->streams->printf("{\"x\":%i.%u,\"y\":%i.%u,\"stat\":%i}\r\n",(int)positions[0],(int)(fabs(positions[0])*1000)%1000,(int)positions[1],(int)(fabs(positions[1])*1000)%1000,this->machine_state);
-				else 				THEKERNEL->streams->printf("{\"x\":%i.%u,\"y\":%i.%u}\r\n"            ,(int)positions[0],(int)(fabs(positions[0])*1000)%1000,(int)positions[1],(int)(fabs(positions[1])*1000)%1000);
+				if (include_stat()) THEKERNEL->streams->printf("{\"x\":%i.%03u,\"y\":%i.%03u,\"stat\":%i}\r\n",(int)positions[0],(int)(fabs(positions[0])*1000)%1000,(int)positions[1],(int)(fabs(positions[1])*1000)%1000,this->machine_state);
+				else 				THEKERNEL->streams->printf("{\"x\":%i.%03u,\"y\":%i.%03u}\r\n"            ,(int)positions[0],(int)(fabs(positions[0])*1000)%1000,(int)positions[1],(int)(fabs(positions[1])*1000)%1000);
 			}
 			else if (xyz == 0x5) {
 				positions[0] = ((float)this->cumulative_steps[0]/this->steps_per_mm[0]);
 				positions[2] = ((float)this->cumulative_steps[2]/this->steps_per_mm[2]);
-				if (include_stat()) THEKERNEL->streams->printf("{\"x\":%i.%u,\"z\":%i.%u,\"stat\":%i}\r\n",(int)positions[0],(int)(fabs(positions[0])*1000)%1000,(int)positions[2],(int)(fabs(positions[2])*1000)%1000,this->machine_state);
-				else 				THEKERNEL->streams->printf("{\"x\":%i.%u,\"z\":%i.%u}\r\n"            ,(int)positions[0],(int)(fabs(positions[0])*1000)%1000,(int)positions[2],(int)(fabs(positions[2])*1000)%1000);
+				if (include_stat()) THEKERNEL->streams->printf("{\"x\":%i.%03u,\"z\":%i.%03u,\"stat\":%i}\r\n",(int)positions[0],(int)(fabs(positions[0])*1000)%1000,(int)positions[2],(int)(fabs(positions[2])*1000)%1000,this->machine_state);
+				else 				THEKERNEL->streams->printf("{\"x\":%i.%03u,\"z\":%i.%03u}\r\n"            ,(int)positions[0],(int)(fabs(positions[0])*1000)%1000,(int)positions[2],(int)(fabs(positions[2])*1000)%1000);
 			}
 			else if (xyz == 0x6){
 				positions[2] = ((float)this->cumulative_steps[2]/this->steps_per_mm[2]);
 				positions[1] = ((float)this->cumulative_steps[1]/this->steps_per_mm[1]);
-				if (include_stat()) THEKERNEL->streams->printf("{\"y\":%i.%u,\"z\":%i.%u,\"stat\":%i}\r\n",(int)positions[1],(int)(fabs(positions[1])*1000)%1000,(int)positions[2],(int)(fabs(positions[2])*1000)%1000,this->machine_state);
-				else 				THEKERNEL->streams->printf("{\"y\":%i.%u,\"z\":%i.%u}\r\n"            ,(int)positions[1],(int)(fabs(positions[1])*1000)%1000,(int)positions[2],(int)(fabs(positions[2])*1000)%1000);
+				if (include_stat()) THEKERNEL->streams->printf("{\"y\":%i.%03u,\"z\":%i.%03u,\"stat\":%i}\r\n",(int)positions[1],(int)(fabs(positions[1])*1000)%1000,(int)positions[2],(int)(fabs(positions[2])*1000)%1000,this->machine_state);
+				else 				THEKERNEL->streams->printf("{\"y\":%i.%03u,\"z\":%i.%03u}\r\n"            ,(int)positions[1],(int)(fabs(positions[1])*1000)%1000,(int)positions[2],(int)(fabs(positions[2])*1000)%1000);
 			}
 			else if (xyz == 0x7){
 				positions[0] = ((float)this->cumulative_steps[0]/this->steps_per_mm[0]);
 				positions[1] = ((float)this->cumulative_steps[1]/this->steps_per_mm[1]);
 				positions[2] = ((float)this->cumulative_steps[2]/this->steps_per_mm[2]);
-				if (include_stat()) THEKERNEL->streams->printf("{\"x\":%i.%u,\"y\":%i.%u,\"z\":%i.%u,\"stat\":%i}\r\n",(int)positions[0],(int)(fabs(positions[0])*1000)%1000,(int)positions[1],(int)(fabs(positions[1])*1000)%1000,(int)positions[2],(int)(fabs(positions[2])*1000)%1000,this->machine_state);
-				else 				THEKERNEL->streams->printf("{\"x\":%i.%u,\"y\":%i.%u,\"z\":%i.%u}\r\n"            ,(int)positions[0],(int)(fabs(positions[0])*1000)%1000,(int)positions[1],(int)(fabs(positions[1])*1000)%1000,(int)positions[2],(int)(fabs(positions[2])*1000)%1000);
+				if (include_stat()) THEKERNEL->streams->printf("{\"x\":%i.%03u,\"y\":%i.%03u,\"z\":%i.%03u,\"stat\":%i}\r\n",(int)positions[0],(int)(fabs(positions[0])*1000)%1000,(int)positions[1],(int)(fabs(positions[1])*1000)%1000,(int)positions[2],(int)(fabs(positions[2])*1000)%1000,this->machine_state);
+				else 				THEKERNEL->streams->printf("{\"x\":%i.%03u,\"y\":%i.%03u,\"z\":%i.%03u}\r\n"            ,(int)positions[0],(int)(fabs(positions[0])*1000)%1000,(int)positions[1],(int)(fabs(positions[1])*1000)%1000,(int)positions[2],(int)(fabs(positions[2])*1000)%1000);
 			}
 			if (abc == 0x1) {
 				positions[3] = ((float)this->cumulative_steps[3]/this->steps_per_mm[3]);
-				if (include_stat()) THEKERNEL->streams->printf("{\"a\":%i.%u,\"stat\":%i}\r\n",(int)positions[3],(int)(fabs(positions[3])*1000)%1000,this->machine_state);
-				else 				THEKERNEL->streams->printf("{\"a\":%i.%u}\r\n",            (int)positions[3],(int)(fabs(positions[3])*1000)%1000);
+				if (include_stat()) THEKERNEL->streams->printf("{\"a\":%i.%03u,\"stat\":%i}\r\n",(int)positions[3],(int)(fabs(positions[3])*1000)%1000,this->machine_state);
+				else 				THEKERNEL->streams->printf("{\"a\":%i.%03u}\r\n",            (int)positions[3],(int)(fabs(positions[3])*1000)%1000);
 			}
 			else if (abc == 0x2) {
 				positions[4] = ((float)this->cumulative_steps[4]/this->steps_per_mm[4]);
-				if (include_stat()) THEKERNEL->streams->printf("{\"b\":%i.%u,\"stat\":%i}\r\n",(int)positions[4],(int)(fabs(positions[4])*1000)%1000,this->machine_state);
-				else 				THEKERNEL->streams->printf("{\"b\":%i.%u}\r\n"            ,(int)positions[4],(int)(fabs(positions[4])*1000)%1000);
+				if (include_stat()) THEKERNEL->streams->printf("{\"b\":%i.%03u,\"stat\":%i}\r\n",(int)positions[4],(int)(fabs(positions[4])*1000)%1000,this->machine_state);
+				else 				THEKERNEL->streams->printf("{\"b\":%i.%03u}\r\n"            ,(int)positions[4],(int)(fabs(positions[4])*1000)%1000);
 			}
 			else if (abc == 0x4) {
 				positions[5] = ((float)this->cumulative_steps[5]/this->steps_per_mm[5]);
-				if (include_stat()) THEKERNEL->streams->printf("{\"c\":%i.%u,\"stat\":%i}\r\n",(int)positions[5],(int)(fabs(positions[5])*1000)%1000,this->machine_state);
-				else 				THEKERNEL->streams->printf("{\"c\":%i.%u}\r\n"            ,(int)positions[5],(int)(fabs(positions[5])*1000)%1000);
+				if (include_stat()) THEKERNEL->streams->printf("{\"c\":%i.%03u,\"stat\":%i}\r\n",(int)positions[5],(int)(fabs(positions[5])*1000)%1000,this->machine_state);
+				else 				THEKERNEL->streams->printf("{\"c\":%i.%03u}\r\n"            ,(int)positions[5],(int)(fabs(positions[5])*1000)%1000);
 			}
 			else if (abc == 0x3) {
 				positions[3] = ((float)this->cumulative_steps[3]/this->steps_per_mm[3]);
 				positions[4] = ((float)this->cumulative_steps[4]/this->steps_per_mm[4]);
-				if (include_stat()) THEKERNEL->streams->printf("{\"a\":%i.%u,\"b\":%i.%u,\"stat\":%i}\r\n",(int)positions[3],(int)(fabs(positions[3])*1000)%1000,(int)positions[4],(int)(fabs(positions[4])*1000)%1000,this->machine_state);
-				else 				THEKERNEL->streams->printf("{\"a\":%i.%u,\"b\":%i.%u}\r\n"            ,(int)positions[3],(int)(fabs(positions[3])*1000)%1000,(int)positions[4],(int)(fabs(positions[4])*1000)%1000);
+				if (include_stat()) THEKERNEL->streams->printf("{\"a\":%i.%03u,\"b\":%i.%03u,\"stat\":%i}\r\n",(int)positions[3],(int)(fabs(positions[3])*1000)%1000,(int)positions[4],(int)(fabs(positions[4])*1000)%1000,this->machine_state);
+				else 				THEKERNEL->streams->printf("{\"a\":%i.%03u,\"b\":%i.%03u}\r\n"            ,(int)positions[3],(int)(fabs(positions[3])*1000)%1000,(int)positions[4],(int)(fabs(positions[4])*1000)%1000);
 			}
 			else if (abc == 0x5) {
 				positions[3] = ((float)this->cumulative_steps[3]/this->steps_per_mm[3]);
 				positions[5] = ((float)this->cumulative_steps[5]/this->steps_per_mm[5]);
-				if (include_stat()) THEKERNEL->streams->printf("{\"a\":%i.%u,\"c\":%i.%u,\"stat\":%i}\r\n",(int)positions[3],(int)(fabs(positions[3])*1000)%1000,(int)positions[5],(int)(fabs(positions[5])*1000)%1000,this->machine_state);
-				else 				THEKERNEL->streams->printf("{\"a\":%i.%u,\"c\":%i.%u}\r\n"            ,(int)positions[3],(int)(fabs(positions[3])*1000)%1000,(int)positions[5],(int)(fabs(positions[5])*1000)%1000);
+				if (include_stat()) THEKERNEL->streams->printf("{\"a\":%i.%03u,\"c\":%i.%03u,\"stat\":%i}\r\n",(int)positions[3],(int)(fabs(positions[3])*1000)%1000,(int)positions[5],(int)(fabs(positions[5])*1000)%1000,this->machine_state);
+				else 				THEKERNEL->streams->printf("{\"a\":%i.%03u,\"c\":%i.%03u}\r\n"            ,(int)positions[3],(int)(fabs(positions[3])*1000)%1000,(int)positions[5],(int)(fabs(positions[5])*1000)%1000);
 			}
 			else if (abc == 0x6){
 				positions[5] = ((float)this->cumulative_steps[5]/this->steps_per_mm[5]);
 				positions[4] = ((float)this->cumulative_steps[4]/this->steps_per_mm[4]);
-				if (include_stat()) THEKERNEL->streams->printf("{\"b\":%i.%u,\"c\":%i.%u,\"stat\":%i}\r\n",(int)positions[4],(int)(fabs(positions[4])*1000)%1000,(int)positions[5],(int)(fabs(positions[5])*1000)%1000,this->machine_state);
-				else 				THEKERNEL->streams->printf("{\"b\":%i.%u,\"c\":%i.%u}\r\n"            ,(int)positions[4],(int)(fabs(positions[4])*1000)%1000,(int)positions[5],(int)(fabs(positions[5])*1000)%1000);
+				if (include_stat()) THEKERNEL->streams->printf("{\"b\":%i.%03u,\"c\":%i.%03u,\"stat\":%i}\r\n",(int)positions[4],(int)(fabs(positions[4])*1000)%1000,(int)positions[5],(int)(fabs(positions[5])*1000)%1000,this->machine_state);
+				else 				THEKERNEL->streams->printf("{\"b\":%i.%03u,\"c\":%i.%03u}\r\n"            ,(int)positions[4],(int)(fabs(positions[4])*1000)%1000,(int)positions[5],(int)(fabs(positions[5])*1000)%1000);
 			}
 			else if (abc == 0x7){
 				positions[3] = ((float)this->cumulative_steps[3]/this->steps_per_mm[3]);
 				positions[4] = ((float)this->cumulative_steps[4]/this->steps_per_mm[4]);
 				positions[5] = ((float)this->cumulative_steps[5]/this->steps_per_mm[5]);
-				if (include_stat()) THEKERNEL->streams->printf("{\"a\":%i.%u,\"b\":%i.%u,\"c\":%i.%u,\"stat\":%i}\r\n",(int)positions[3],(int)(fabs(positions[3])*1000)%1000,(int)positions[4],(int)(fabs(positions[4])*1000)%1000,(int)positions[5],(int)(fabs(positions[5])*1000)%1000,this->machine_state);
-				else 				THEKERNEL->streams->printf("{\"a\":%i.%u,\"b\":%i.%u,\"c\":%i.%u}\r\n"            ,(int)positions[3],(int)(fabs(positions[3])*1000)%1000,(int)positions[4],(int)(fabs(positions[4])*1000)%1000,(int)positions[5],(int)(fabs(positions[5])*1000)%1000);
+				if (include_stat()) THEKERNEL->streams->printf("{\"a\":%i.%03u,\"b\":%i.%03u,\"c\":%i.%03u,\"stat\":%i}\r\n",(int)positions[3],(int)(fabs(positions[3])*1000)%1000,(int)positions[4],(int)(fabs(positions[4])*1000)%1000,(int)positions[5],(int)(fabs(positions[5])*1000)%1000,this->machine_state);
+				else 				THEKERNEL->streams->printf("{\"a\":%i.%03u,\"b\":%i.%03u,\"c\":%i.%03u}\r\n"            ,(int)positions[3],(int)(fabs(positions[3])*1000)%1000,(int)positions[4],(int)(fabs(positions[4])*1000)%1000,(int)positions[5],(int)(fabs(positions[5])*1000)%1000);
 			}
 		}
 	}
