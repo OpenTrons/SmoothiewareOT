@@ -21,6 +21,7 @@ deploy:
   region: us-east-2
   on:
     repo: Opentrons/SmoothiewareOT
+    all_branches: true
 
 notifications:
   email:
