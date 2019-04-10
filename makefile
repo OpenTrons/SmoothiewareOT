@@ -17,7 +17,7 @@ all:
 .PHONY: build
 # build hex file with correct configs for opentrons
 build:
-	all AXIS=6 PAXIS=4 CNC=1 DISABLEMSD=1
+	@ $(MAKE) all AXIS=6 PAXIS=4 CNC=1 DISABLEMSD=1
 
 clean: $(DIRSCLEAN)
 
