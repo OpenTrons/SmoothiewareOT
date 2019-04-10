@@ -11,18 +11,16 @@ before_script:
 script:
   - make clean build
 
-# whitelist
-branches:
-  only:
-    - edge
-
 deploy:
   provider: s3
   access_key_id: $AWS_ACCESS_KEY
   secret_access_key: $AWS_SECRET_KEY
-  local-dir: FirmwareBin/
+  local-dir: firmwarebin/
+  upload-dir: $TRAVIS-BRANCH
   bucket: opentrons-smoothieware-hex
   region: us-east-2
+  on:
+    repo: Opentrons/SmoothiewareOT
 
 notifications:
   email:
