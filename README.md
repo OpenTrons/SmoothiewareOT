@@ -25,7 +25,7 @@ make clean build
 ```
 
 This will generate a hex file which can be added onto an SD card to be placed in a smoothie board that will run our software. If you are receiving an error that the compiler is not
-being recognized then try the following on a Unix/Linux distro: `PATH=$PATH:/path/to/bin/file/gcc-arm-none-eabi-8-2018-q4-major/bin`
+being recognized then try the following on a Unix/Linux distro: `PATH=$PATH:/path/to/bin/file/gcc-arm-none-eabi-8-2018-q4-major/bin make clean build`
 
 If you are connected to a smoothie board, you can use the command
 ```
@@ -44,8 +44,8 @@ Contributions are very welcome !
 
 ## Donate
 We based our firmware off of the smoothie firmware which is developed by volunteers. If you find this software useful, want to say thanks and encourage development, please consider a
-[donation!](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=9QDYFXXBPM6Y6&lc=US&item_name=Smoothieware%20development&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted)
+[donation!](https://paypal.me/smoothieware)
 
 ## License
 
-Smoothieware is released under the GNU GPL v3, which you can find at http://www.gnu.org/licenses/gpl-3.0.en.html
+Smoothieware is released under the [GNU GPL v3](http://www.gnu.org/licenses/gpl-3.0.en.html)
