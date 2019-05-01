@@ -1200,6 +1200,60 @@ void Endstops::on_gcode_received(void *argument)
                 gcode->stream->printf(" will take effect next home\n");
                 break;
 
+            case 365: { //M365, change endstop configs for pipette type
+                float value = 0.f;
+                char pos = (char) 0;
+                switch (gcode->subcode) {
+                  case 0:
+                    // Homing Position
+                    for (const auto &p : homing_axis) {
+                      if (gcode->has_letter(p.axis)) {
+                        pos = p.axis;
+                        value = gcode->get_value(p.axis);
+                        homing_axis[p.axis_index].homing_position = value;
+                        break;
+                      }
+                    }
+                    break;
+                  case 1:
+                    // max travel
+                    for (const auto &p : homing_axis) {
+                      if (gcode->has_letter(p.axis)) {
+                        pos = p.axis;
+                        value = gcode->get_value(p.axis);
+                        homing_axis[p.axis_index].max_travel = value;
+                        break;
+                      }
+                    }
+                  break;
+                  case 2:
+                    // debounce
+                    pos = 'E';
+                    value = gcode->get_value('O');
+                    debounce_ms = value;
+                    break;
+                  case 3:
+                    // retract
+                    for (const auto &p : homing_axis) {
+                      if (gcode->has_letter(p.axis)) {
+                        pos = p.axis;
+                        value = gcode->get_value(p.axis);
+                        homing_axis[p.axis_index].retract = value;
+                        break;
+                      }
+                    }
+                    break;
+                }
+                if (pos && value) {
+                  gcode->stream->printf("%c updated %1.2f\n", pos, value);
+                }
+                if (pos == 0) {
+                  THEKERNEL->streams->printf("Error, no axis specified\n");
+                }
+                if (value == 0.f) {
+                  THEKERNEL->streams->printf("Error, no value specified\n");
+                }
+              } break;
             case 306: // set homing offset based on current position
                 if(is_rdelta) return; // RotaryDeltaCalibration module will handle this
 
