@@ -19,6 +19,7 @@ deploy:
   provider: s3
   access_key_id: $AWS_ACCESS_KEY_ID
   secret_access_key: $AWS_SECRET_ACCESS_KEY
+  acl: public_read
   local-dir: firmwarebin/
   upload-dir: ${TRAVIS_BRANCH}-${TRAVIS_BUILD_NUMBER}
   bucket: $HEX_BUCKET
