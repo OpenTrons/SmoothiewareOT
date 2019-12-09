@@ -24,6 +24,7 @@ deploy:
   upload-dir: ${TRAVIS_BRANCH}-${TRAVIS_BUILD_NUMBER}
   bucket: $HEX_BUCKET
   region: us-east-2
+  skip_cleanup: true
   on:
     repo: Opentrons/SmoothiewareOT
     all_branches: true
