@@ -1,12 +1,16 @@
 language: cpp
 
+env:
+  global:
+    - PATH=${TRAVIS_BUILD_DIR}/gcc-arm-none-eabi/bin:${PATH}
+
 compiler:
   - gcc
 
-before_script:
- - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
- - sudo apt-get update -qq
- - sudo apt-get install -y --force-yes gcc-arm-none-eabi
+install:
+  - sudo dpkg --add-architecture i386
+  - sudo apt-get install libc6:i386 libstdc++6:i386  
+  - ./travis_install
 
 script:
   - make clean build
@@ -16,7 +20,7 @@ deploy:
   access_key_id: $AWS_ACCESS_KEY_ID
   secret_access_key: $AWS_SECRET_ACCESS_KEY
   local-dir: firmwarebin/
-  upload-dir: $TRAVIS-BRANCH
+  upload-dir: ${TRAVIS_BRANCH}-${TRAVIS_BUILD_NUMBER}
   bucket: $HEX_BUCKET
   region: us-east-2
   on:
