@@ -21,3 +21,5 @@ debug
 /win_install.log
 /linux_install.log
 /src/default_excludes.mk
+firmwarebin/
+gcc-arm-none-eabi-*

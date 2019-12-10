@@ -2,7 +2,7 @@
 
 *This is an Opentrons fork of the open-source [Smoothieware](https://github.com/smoothieware/smoothieware)*
 
-[Recent Stable Build Here](https://github.com/Opentrons/SmoothiewareOT/tree/edge/FirmwareBin)
+A recent stable build can usually be found in the releases.
 
 Smoothie is a free, opensource, high performance G-code interpreter and CNC controller written in Object-Oriented C++ for the LPC17xx micro-controller ( ARM Cortex M3 architecture ). It will run on a mBed, a LPCXpresso, a SmoothieBoard, R2C2 or any other LPC17xx-based board. The motion control part is a port of the awesome grbl.
 
