@@ -12,22 +12,32 @@ install:
   - sudo apt-get install libc6:i386 libstdc++6:i386  
   - ./travis_install
 
+before_script:
+  - git checkout $TRAVIS_BRANCH
+
 script:
   - make clean build
 
 deploy:
-  provider: s3
-  access_key_id: $AWS_ACCESS_KEY_ID
-  secret_access_key: $AWS_SECRET_ACCESS_KEY
-  acl: public_read
-  local-dir: firmwarebin/
-  upload-dir: ${TRAVIS_BRANCH}-${TRAVIS_BUILD_NUMBER}
-  bucket: $HEX_BUCKET
-  region: us-east-2
-  skip_cleanup: true
-  on:
-    repo: Opentrons/SmoothiewareOT
-    all_branches: true
+  - provider: s3
+    access_key_id: $AWS_ACCESS_KEY_ID
+    secret_access_key: $AWS_SECRET_ACCESS_KEY
+    acl: public_read
+    local-dir: firmwarebin/
+    upload-dir: ${TRAVIS_BRANCH}
+    bucket: $HEX_BUCKET
+    region: us-east-2
+    skip_cleanup: true
+    on:
+      repo: Opentrons/SmoothiewareOT
+      all_branches: true
+  - provider: releases
+    api_key: $GITHUB_OAUTH_TOKEN
+    file_glob: true
+    file: firmwarebin/*.hex
+    skip_cleanup: true
+    on:
+      tags: true
 
 notifications:
   email:

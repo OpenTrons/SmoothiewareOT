@@ -2,7 +2,7 @@
 
 *This is an Opentrons fork of the open-source [Smoothieware](https://github.com/smoothieware/smoothieware)*
 
-[Recent Stable Build Here](https://github.com/Opentrons/SmoothiewareOT/tree/edge/FirmwareBin)
+A recent stable build can usually be found in the releases.
 
 Smoothie is a free, opensource, high performance G-code interpreter and CNC controller written in Object-Oriented C++ for the LPC17xx micro-controller ( ARM Cortex M3 architecture ). It will run on a mBed, a LPCXpresso, a SmoothieBoard, R2C2 or any other LPC17xx-based board. The motion control part is a port of the awesome grbl.
 
@@ -41,6 +41,14 @@ Please follow the guide [here](https://github.com/Opentrons/opentrons/blob/edge/
 Please take a look [here](https://github.com/Opentrons/opentrons/blob/edge/CONTRIBUTING.md#opening-pull-requests)
 
 Contributions are very welcome !
+
+## Releasing (for Opentrons devs)
+
+When you want to release a version of the smoothie software for subsequent Robot OS updates, just create a github release in this repository. Travis will automatically build the tag and post it to the release. 
+
+Note: You must create the github release first - don't create and push a tag from your remote. The release needs to be created for Travis to properly deploy the result.
+
+Once you've made the release, go update the [package in buildroot](https://github.com/Opentrons/buildroot/blob/opentrons-develop/package/opentrons-smoothie-firmware/opentrons-smoothie-firmware.mk).
 
 ## Donate
 We based our firmware off of the smoothie firmware which is developed by volunteers. If you find this software useful, want to say thanks and encourage development, please consider a

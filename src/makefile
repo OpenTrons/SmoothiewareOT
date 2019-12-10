@@ -45,10 +45,11 @@ endif
 
 # generate a git version string
 ifneq "$(OS)" "Windows_NT"
-DEFINES += -D__GITVERSIONSTRING__=\"$(shell ./generate-version.sh)\"
+BUILD_VERSION=$(shell ./generate-version.sh)
 else
-DEFINES += -D__GITVERSIONSTRING__=\"$(shell generate-version.bat)\"
+BUILD_VERSION=$(shell generate-version.bat)
 endif
+DEFINES += -D__GITVERSIONSTRING__=\"$(BUILD_VERSION)\"
 
 # use c++11 features for the checksums and set default baud rate for serial uart
 DEFINES += -DCHECKSUM_USE_CPP -DDEFAULT_SERIAL_BAUD_RATE=$(DEFAULT_SERIAL_BAUD_RATE)
@@ -114,7 +115,7 @@ else
 COPY=copy
 endif
 
-.PHONY: debug-store flash upload debug console dfu
+.PHONY: debug-store flash upload debug console dfu copyhex
 print-%  : ; @echo $* = $($*)
 
 debug-store: ../LPC1768/$(PROJECT).elf
@@ -135,3 +136,7 @@ debug: ../LPC1768/$(PROJECT)_lastupload.elf
 console:
 	stty raw ignbrk -echo $(BAUD) < $(CONSOLE)
 	( cat <&3 & cat >&3 ; kill %% ) 3<>$(CONSOLE)
+
+copyhex: ../LPC1768/$(PROJECT).hex
+	mkdir -p ../firmwarebin
+	$(COPY) $< ../firmwarebin/smoothie-$(BUILD_VERSION).hex

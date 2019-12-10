@@ -18,6 +18,7 @@ all:
 # build hex file with correct configs for opentrons
 build:
 	@ $(MAKE) all AXIS=6 PAXIS=4 CNC=1 DISABLEMSD=1
+	@ $(MAKE) -C src copyhex
 
 clean: $(DIRSCLEAN)
 
