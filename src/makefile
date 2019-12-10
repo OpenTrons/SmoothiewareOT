@@ -138,7 +138,5 @@ console:
 	( cat <&3 & cat >&3 ; kill %% ) 3<>$(CONSOLE)
 
 copyhex: ../LPC1768/$(PROJECT).hex
-	git status
-	git symbolic-ref HEAD
 	mkdir -p ../firmwarebin
 	$(COPY) $< ../firmwarebin/$(BUILD_VERSION).hex
