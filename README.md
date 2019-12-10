@@ -42,6 +42,14 @@ Please take a look [here](https://github.com/Opentrons/opentrons/blob/edge/CONTR
 
 Contributions are very welcome !
 
+## Releasing (for Opentrons devs)
+
+When you want to release a version of the smoothie software for subsequent Robot OS updates, just create a github release in this repository. Travis will automatically build the tag and post it to the release. 
+
+Note: You must create the github release first - don't create and push a tag from your remote. The release needs to be created for Travis to properly deploy the result.
+
+Once you've made the release, go update the [package in buildroot](https://github.com/Opentrons/buildroot/blob/opentrons-develop/package/opentrons-smoothie-firmware/opentrons-smoothie-firmware.mk).
+
 ## Donate
 We based our firmware off of the smoothie firmware which is developed by volunteers. If you find this software useful, want to say thanks and encourage development, please consider a
 [donation!](https://paypal.me/smoothieware)
