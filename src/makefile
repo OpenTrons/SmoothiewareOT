@@ -139,4 +139,4 @@ console:
 
 copyhex: ../LPC1768/$(PROJECT).hex
 	mkdir -p ../firmwarebin
-	$(COPY) $< ../firmwarebin/$(BUILD_VERSION).hex
+	$(COPY) $< ../firmwarebin/smoothie-$(BUILD_VERSION).hex
