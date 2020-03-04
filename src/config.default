@@ -219,21 +219,21 @@ zprobe.debounce_ms                           2
 
 # PIPETTE MICROSTEPPING
 
-switch.bMicrostepping.enable                            true
+switch.bMicrostepping.enable                            false
 switch.bMicrostepping.input_on_command                  M52
 switch.bMicrostepping.input_off_command                 M53
 switch.bMicrostepping.output_pin                        0.25
 switch.bMicrostepping.output_type                       digital
-switch.bMicrostepping.failsafe_set_to                   1
-switch.bMicrostepping.startup_state                     true
+switch.bMicrostepping.failsafe_set_to                   0
+switch.bMicrostepping.startup_state                     false
 
-switch.cMicrostepping.enable                            true
+switch.cMicrostepping.enable                            false
 switch.cMicrostepping.input_on_command                  M54
 switch.cMicrostepping.input_off_command                 M55
 switch.cMicrostepping.output_pin                        0.26
 switch.cMicrostepping.output_type                       digital
-switch.cMicrostepping.failsafe_set_to                   1
-switch.cMicrostepping.startup_state                     true
+switch.cMicrostepping.failsafe_set_to                   0
+switch.cMicrostepping.startup_state                     false
 
 ##################################
 ##################################
