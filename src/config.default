@@ -256,6 +256,7 @@ kill_button_pin                              2.12
 msd_disable                                  true
 home_z_first                                 false
 currentcontrol_module_enable                 true
+digipot_factor                               128
 
 ##################################
 ##################################
