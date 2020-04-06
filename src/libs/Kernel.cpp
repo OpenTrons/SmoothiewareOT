@@ -28,6 +28,7 @@
 #include "EndstopsPublicAccess.h"
 #include "Configurator.h"
 #include "SimpleShell.h"
+#include "Revision.h"
 
 #ifndef NO_TOOLS_LASER
 #include "Laser.h"
@@ -163,10 +164,11 @@ Kernel::Kernel()
     this->step_ticker->set_unstep_time( microseconds_per_step_pulse );
 
     // Core modules
-    this->add_module( this->conveyor       = new Conveyor()      );
-    this->add_module( this->gcode_dispatch = new GcodeDispatch() );
-    this->add_module( this->robot          = new Robot()         );
-    this->add_module( this->simpleshell    = new SimpleShell()   );
+    this->add_module( this->conveyor       = new Conveyor()        );
+    this->add_module( this->gcode_dispatch = new GcodeDispatch()   );
+    this->add_module( this->robot          = new Robot()           );
+    this->add_module( this->simpleshell    = new SimpleShell()     );
+    this->add_module( this->revision       = new RevisionManager() );
 
     this->planner = new Planner();
     this->configurator = new Configurator();
