@@ -257,6 +257,9 @@ msd_disable                                  true
 home_z_first                                 false
 currentcontrol_module_enable                 true
 
+digipot_factor_rev12                         113.3
+digipot_factor                               128
+
 ##################################
 ##################################
 ##################################
