@@ -32,6 +32,7 @@
 #include "StepperMotor.h"
 #include "Configurator.h"
 #include "Block.h"
+#include "libs/Revision.h"
 
 #include "TemperatureControlPublicAccess.h"
 #include "EndstopsPublicAccess.h"
@@ -57,8 +58,6 @@ extern unsigned int g_maximumHeapAddress;
 #include <stdint.h>
 #include <functional>
 
-#define pcb_revision_bit_0           CHECKSUM("pcb_revision_bit_0")
-#define pcb_revision_bit_1           CHECKSUM("pcb_revision_bit_1")
 
 extern "C" uint32_t  __end__;
 extern "C" uint32_t  __malloc_free_list;
@@ -99,7 +98,6 @@ const SimpleShell::ptentry_t SimpleShell::commands_table[] = {
 };
 
 int SimpleShell::reset_delay_secs = 0;
-uint8_t SimpleShell::pcb_revision = 12;
 
 // Adam Greens heap walk from http://mbed.org/forum/mbed/topic/2701/?page=4#comment-22556
 static uint32_t heapWalk(StreamOutput *stream, bool verbose)
@@ -165,7 +163,6 @@ void SimpleShell::on_module_loaded()
 
     reset_delay_secs = 0;
 
-    pcb_revision = get_pcb_revision();
 }
 
 void SimpleShell::on_second_tick(void *)
@@ -634,19 +631,7 @@ void SimpleShell::net_command( string parameters, StreamOutput *stream)
     }
 }
 
-// read GPIO to determine the major version number of the OT2 stepper driver hardware
-uint8_t SimpleShell::get_pcb_revision()
-{
-    uint8_t ot_pcb_rev = 12;  // production began at v12
-    Pin *rev_bit_0 = new Pin();
-    Pin *rev_bit_1 = new Pin();
-    rev_bit_0->from_string(THEKERNEL->config->value(pcb_revision_bit_0)->as_string())->as_input();
-    rev_bit_1->from_string(THEKERNEL->config->value(pcb_revision_bit_1)->as_string())->as_input();
-    safe_delay_us(200);  // make sure the pins have settled
-    if (rev_bit_0->get()) ot_pcb_rev += 1;
-    if (rev_bit_1->get()) ot_pcb_rev += 2;
-    return ot_pcb_rev;
-}
+
 
 // print out build version
 void SimpleShell::version_command( string parameters, StreamOutput *stream)
@@ -654,7 +639,11 @@ void SimpleShell::version_command( string parameters, StreamOutput *stream)
     Version vers;
     uint32_t dev = getDeviceType();
     const char *mcu = (dev & 0x00100000) ? "LPC1769" : "LPC1768";
-    stream->printf("Build version: %s, Build date: %s, PCB Rev: %d, MCU: %s, System Clock: %ldMHz\r\n", vers.get_build(), vers.get_build_date(), pcb_revision, mcu, SystemCoreClock / 1000000);
+    stream->printf(
+        "Build version: %s, Build date: %s, PCB Rev: %s, MCU: %s, System Clock: %ldMHz\r\n",
+        vers.get_build(), vers.get_build_date(),
+        string_from_rev(THEKERNEL->revision->pcb_revision),
+        mcu, SystemCoreClock / 1000000);
     #ifdef CNC
     stream->printf("  CNC Build ");
     #endif

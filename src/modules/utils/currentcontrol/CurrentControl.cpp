@@ -4,6 +4,7 @@
 #include "libs/utils.h"
 #include "ConfigValue.h"
 #include "libs/StreamOutput.h"
+#include "libs/Revision.h"
 
 #include "Gcode.h"
 #include "Config.h"
@@ -29,6 +30,7 @@ using namespace std;
 #define digipotchip_checksum                    CHECKSUM("digipotchip")
 #define digipot_max_current                     CHECKSUM("digipot_max_current")
 #define digipot_factor                          CHECKSUM("digipot_factor")
+#define digipot_factor_rev12                    CHECKSUM("digipot_factor_rev12")
 
 #define mcp4451_checksum                        CHECKSUM("mcp4451")
 #define ad5206_checksum                         CHECKSUM("ad5206")
@@ -60,7 +62,11 @@ void CurrentControl::on_module_loaded()
     }
 
     digipot->set_max_current( THEKERNEL->config->value(digipot_max_current )->by_default(2.0f)->as_number());
-    digipot->set_factor( THEKERNEL->config->value(digipot_factor )->by_default(113.33f)->as_number());
+    if (THEKERNEL->revision->pcb_revision > REV_12) {
+        digipot->set_factor( THEKERNEL->config->value(digipot_factor      )->by_default(128.0f)->as_number());
+    } else {
+        digipot->set_factor( THEKERNEL->config->value(digipot_factor_rev12)->by_default(113.33f)->as_number());
+    }
 
     // Get configuration
     this->digipot->set_current(0, THEKERNEL->config->value(alpha_current_checksum  )->by_default(0.8f)->as_number());
