@@ -125,13 +125,13 @@ Pin* Pin::as_repeater(){
 Pin* Pin::pull_none(){
 	if (!this->valid) return this;
 	// Set the two bits for this pin as 10
-	if( this->port_number == 0 && this->pin < 16  ){ LPC_PINCON->PINMODE0 |= (2<<( this->pin*2)); LPC_PINCON->PINMODE0 &= ~(1<<( this->pin    *2)); }
-	if( this->port_number == 0 && this->pin >= 16 ){ LPC_PINCON->PINMODE1 |= (2<<( this->pin*2)); LPC_PINCON->PINMODE1 &= ~(1<<((this->pin-16)*2)); }
-	if( this->port_number == 1 && this->pin < 16  ){ LPC_PINCON->PINMODE2 |= (2<<( this->pin*2)); LPC_PINCON->PINMODE2 &= ~(1<<( this->pin    *2)); }
-	if( this->port_number == 1 && this->pin >= 16 ){ LPC_PINCON->PINMODE3 |= (2<<( this->pin*2)); LPC_PINCON->PINMODE3 &= ~(1<<((this->pin-16)*2)); }
-	if( this->port_number == 2 && this->pin < 16  ){ LPC_PINCON->PINMODE4 |= (2<<( this->pin*2)); LPC_PINCON->PINMODE4 &= ~(1<<( this->pin    *2)); }
-	if( this->port_number == 3 && this->pin >= 16 ){ LPC_PINCON->PINMODE7 |= (2<<( this->pin*2)); LPC_PINCON->PINMODE7 &= ~(1<<((this->pin-16)*2)); }
-	if( this->port_number == 4 && this->pin >= 16 ){ LPC_PINCON->PINMODE9 |= (2<<( this->pin*2)); LPC_PINCON->PINMODE9 &= ~(1<<((this->pin-16)*2)); }
+	if( this->port_number == 0 && this->pin < 16  ){ LPC_PINCON->PINMODE0 |= (2<<( this->pin    *2)); LPC_PINCON->PINMODE0 &= ~(1<<( this->pin    *2)); }
+	if( this->port_number == 0 && this->pin >= 16 ){ LPC_PINCON->PINMODE1 |= (2<<((this->pin-16)*2)); LPC_PINCON->PINMODE1 &= ~(1<<((this->pin-16)*2)); }
+	if( this->port_number == 1 && this->pin < 16  ){ LPC_PINCON->PINMODE2 |= (2<<( this->pin    *2)); LPC_PINCON->PINMODE2 &= ~(1<<( this->pin    *2)); }
+	if( this->port_number == 1 && this->pin >= 16 ){ LPC_PINCON->PINMODE3 |= (2<<((this->pin-16)*2)); LPC_PINCON->PINMODE3 &= ~(1<<((this->pin-16)*2)); }
+	if( this->port_number == 2 && this->pin < 16  ){ LPC_PINCON->PINMODE4 |= (2<<( this->pin    *2)); LPC_PINCON->PINMODE4 &= ~(1<<( this->pin    *2)); }
+	if( this->port_number == 3 && this->pin >= 16 ){ LPC_PINCON->PINMODE7 |= (2<<((this->pin-16)*2)); LPC_PINCON->PINMODE7 &= ~(1<<((this->pin-16)*2)); }
+	if( this->port_number == 4 && this->pin >= 16 ){ LPC_PINCON->PINMODE9 |= (2<<((this->pin-16)*2)); LPC_PINCON->PINMODE9 &= ~(1<<((this->pin-16)*2)); }
 	return this;
 }
 
