@@ -63,7 +63,7 @@ ConfigValue *ConfigValue::required()
     return this;
 }
 
-float ConfigValue::as_number()
+float ConfigValue::as_number() const
 {
     if( this->found == false && this->default_set == true ) {
         return this->default_double;
@@ -79,7 +79,7 @@ float ConfigValue::as_number()
     }
 }
 
-int ConfigValue::as_int()
+int ConfigValue::as_int() const
 {
     if( this->found == false && this->default_set == true ) {
         return this->default_int;
@@ -95,12 +95,12 @@ int ConfigValue::as_int()
     }
 }
 
-std::string ConfigValue::as_string()
+std::string ConfigValue::as_string() const
 {
     return this->value;
 }
 
-bool ConfigValue::as_bool()
+bool ConfigValue::as_bool() const
 {
     if( this->found == false && this->default_set == true ) {
         return this->default_int;
@@ -134,7 +134,7 @@ ConfigValue *ConfigValue::by_default(string val)
     return this;
 }
 
-bool ConfigValue::has_characters( const char *mask )
+bool ConfigValue::has_characters( const char *mask ) const
 {
     if( this->value.find_first_of(mask) != string::npos ) {
         return true;
@@ -143,8 +143,11 @@ bool ConfigValue::has_characters( const char *mask )
     }
 }
 
-bool ConfigValue::is_inverted()
+bool ConfigValue::is_inverted() const
 {
     return this->has_characters("!");
 }
 
+bool ConfigValue::value_found() const {
+    return this->found;
+}

@@ -19,16 +19,16 @@ class ConfigValue{
         ConfigValue& operator= (const ConfigValue& to_copy);
         void clear();
         ConfigValue* required();
-        float as_number();
-        int as_int();
-        bool as_bool();
-        string as_string();
+        float as_number() const;
+        int as_int() const;
+        bool as_bool() const;
+        string as_string() const;
+        bool value_found() const;
 
         ConfigValue* by_default(float val);
         ConfigValue* by_default(string val);
         ConfigValue* by_default(int val);
-        bool is_inverted();
-
+        bool is_inverted() const;
 
         friend class ConfigCache;
         friend class Config;
@@ -37,7 +37,7 @@ class ConfigValue{
         friend class FileConfigSource;
 
     private:
-        bool has_characters( const char* mask );
+        bool has_characters( const char* mask ) const;
         string value;
         int default_int;
         float default_double;
