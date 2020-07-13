@@ -132,6 +132,7 @@ endstop.minx.axis                            X
 endstop.minx.enable                          true
 endstop.minx.limit_enable                    true
 endstop.minx.pin                             1.24!^
+endstop.minx.pin_revA                        1.24!-
 endstop.minx.homing_direction                home_to_max
 endstop.minx.homing_position                 421
 endstop.minx.max_travel                      430
@@ -144,6 +145,7 @@ endstop.miny.axis                            Y
 endstop.miny.enable                          true
 endstop.miny.limit_enable                    false
 endstop.miny.pin                             1.25!^
+endstop.miny.pin_revA                        1.25!-
 endstop.miny.homing_direction                home_to_max
 endstop.miny.homing_position                 353
 endstop.miny.max_travel                      370
@@ -156,6 +158,7 @@ endstop.minz.axis                            Z
 endstop.minz.enable                          true
 endstop.minz.limit_enable                    true
 endstop.minz.pin                             1.26^
+endstop.minz.pin_revA                        1.26-
 endstop.minz.homing_direction                home_to_max
 endstop.minz.homing_position                 220
 endstop.minz.max_travel                      230
@@ -168,6 +171,7 @@ endstop.mina.axis                            A
 endstop.mina.enable                          true
 endstop.mina.limit_enable                    true
 endstop.mina.pin                             1.27^
+endstop.mina.pin_revA                        1.27-
 endstop.mina.homing_direction                home_to_max
 endstop.mina.homing_position                 220
 endstop.mina.max_travel                      230
@@ -180,6 +184,7 @@ endstop.minb.axis                            B
 endstop.minb.enable                          true
 endstop.minb.limit_enable                    true
 endstop.minb.pin                             1.28^
+endstop.minb.pin_revA                        1.28-
 endstop.minb.homing_direction                home_to_max
 endstop.minb.homing_position                 20
 endstop.minb.max_travel                      30
@@ -192,6 +197,7 @@ endstop.minc.axis                            C
 endstop.minc.enable                          true
 endstop.minc.limit_enable                    true
 endstop.minc.pin                             1.29^
+endstop.minc.pin_revA                        1.29-
 endstop.minc.homing_direction                home_to_max
 endstop.minc.homing_position                 20
 endstop.minc.max_travel                      30
