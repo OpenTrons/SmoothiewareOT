@@ -29,6 +29,7 @@
 #include "StepTicker.h"
 #include "BaseSolution.h"
 #include "SerialMessage.h"
+#include "libs/Revision.h"
 
 #include <ctype.h>
 #include <algorithm>
@@ -78,6 +79,10 @@ enum DEFNS {MIN_PIN, MAX_PIN, MAX_TRAVEL, FAST_RATE, SLOW_RATE, RETRACT, DIRECTI
 #define endstop_checksum                   CHECKSUM("endstop")
 #define enable_checksum                    CHECKSUM("enable")
 #define pin_checksum                       CHECKSUM("pin")
+#define pin_rev12_checksum                 CHECKSUM("pin_rev12")
+#define pin_revA_checksum                  CHECKSUM("pin_revA")
+#define pin_revB_checksum                  CHECKSUM("pin_revB")
+#define pin_revC_checksum                  CHECKSUM("pin_revC")
 #define axis_checksum                      CHECKSUM("axis")
 #define direction_checksum                 CHECKSUM("homing_direction")
 #define position_checksum                  CHECKSUM("homing_position")
@@ -90,7 +95,57 @@ enum DEFNS {MIN_PIN, MAX_PIN, MAX_TRAVEL, FAST_RATE, SLOW_RATE, RETRACT, DIRECTI
 #define STEPPER THEROBOT->actuators
 #define STEPS_PER_MM(a) (STEPPER[a]->get_steps_per_mm())
 
+static const uint16_t checksums_for_rev[] = {
+        pin_checksum,
+        pin_rev12_checksum,
+        pin_revA_checksum,
+        pin_revB_checksum,
+        pin_revC_checksum};
 
+static string pin_for_rev(
+    Config *config,
+    Rev revision,
+    uint16_t cs)
+{
+    /*
+     * Find the appropriate endstop pin definition for the provided revision.
+     *
+     * This will find the pin with the revision closest to but before the rev,
+     * finally falling back to unqualified *.pin (and starting there if invalid).
+     *
+     * For instance, with this config:
+     * endstop.minx.pin = 1.26!^
+     * endstop.minx.pin_revA = 1.26!-
+     * endstop.minx.pin_rev12 = 1.26-
+     *
+     * Calling this function with REV_A, REV_B, or REV_C will yield 1.26!-
+     * Calling this function with REV_12 will yield 1.26-
+     *
+     * This config:
+     * endstop.minx.pin = 1.26!^
+     *
+     * will yield 1.26!^ for any revision.
+     *
+     * Note that this config:
+     * endstop.minx.pin = 1.26!^
+     * endstop.minx.pin_rev12 = 1.26!
+     *
+     * will always give 1.26! (unless the revision can't be read for some reason).
+     * If you are specifying *.pin_rev12 you should probably also be specifying a
+     * higher version like *.pin_revA or *.pin_revB. If the pin is the same across
+     * all revisions, for clarity use plain *.pin.
+     */
+    for (uint8_t rev_to_check = REV_C; rev_to_check != REV_INVALID; rev_to_check--) {
+        // find the revision of the board
+        if (rev_to_check > revision) continue;
+        auto *const config_for_rev = config->value(
+            endstop_checksum, cs, checksums_for_rev[rev_to_check]);
+        if (!config_for_rev->value_found()) continue;
+        return config_for_rev->as_string();
+    }
+    // nothing found, return nc
+    return config->value(endstop_checksum, cs, pin_checksum)->by_default("nc" )->as_string();
+}
 
 // Homing States
 enum STATES {
@@ -238,6 +293,7 @@ bool Endstops::load_config()
 
         temp_axis_array.fill(t);
     }
+    const auto revision = THEKERNEL->revision->pcb_revision;
 
     // iterate over all endstop.*.*
     std::vector<uint16_t> modules;
@@ -246,7 +302,8 @@ bool Endstops::load_config()
         if(!THEKERNEL->config->value(endstop_checksum, cs, enable_checksum )->as_bool()) continue;
 
         endstop_info_t *pin_info= new endstop_info_t;
-        pin_info->pin.from_string(THEKERNEL->config->value(endstop_checksum, cs, pin_checksum)->by_default("nc" )->as_string())->as_input();
+        const auto pin_str = pin_for_rev(THEKERNEL->config, revision, cs);
+        pin_info->pin.from_string(pin_str)->as_input();
         if(!pin_info->pin.connected()){
             // no pin defined try next
             delete pin_info;
