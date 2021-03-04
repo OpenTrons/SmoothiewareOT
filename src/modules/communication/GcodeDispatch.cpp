@@ -261,6 +261,7 @@ try_again:
                                 return;
 
                             case 115: // M115 Get firmware version and capabilities
+                                delete gcode;
                                 Version vers;
 
                                 new_message.stream->printf("FIRMWARE_NAME:Smoothieware, FIRMWARE_URL:http://smoothieware.org, SOURCE_CODE_URL:https://github.com/Smoothieware/Smoothieware, FIRMWARE_VERSION:%s, BUILD_DATE:%s, SYSTEM_CLOCK:%ldMHz, AXES:%d", vers.get_build(), vers.get_build_date(), SystemCoreClock / 1000000, MAX_ROBOT_ACTUATORS);
