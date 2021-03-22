@@ -53,6 +53,8 @@
 #define Y_AXIS 1
 #define Z_AXIS 2
 #define A_AXIS 3
+#define B_AXIS 4
+#define C_AXIS 5
 
 #define STEPPER THEROBOT->actuators
 #define STEPS_PER_MM(a) (STEPPER[a]->get_steps_per_mm())
@@ -198,9 +200,9 @@ bool ZProbe::run_probe(float& mm, float feedrate, float max_dist, bool reverse)
 
     // move Z down
     bool dir= (!reverse_z != reverse); // xor
-    float delta[3]= {0,0,0};
+    float delta[6]= {0,0,0,0,0,0};
     delta[Z_AXIS]= dir ? -maxz : maxz;
-    THEROBOT->delta_move(delta, feedrate, 3);
+    THEROBOT->delta_move(delta, feedrate, 6);
 
     // wait until finished
     THECONVEYOR->wait_for_idle();
@@ -351,9 +353,9 @@ void ZProbe::on_gcode_received(void *argument)
 
         }else if(gcode->has_letter('Y')) {
             // probe in the Y axis
-            probe_XYZ(gcode, Y_AXIS);
+            //probe_XYZ(gcode, Y_AXIS);
 
-        }else if(gcode->has_letter('Z')) {
+        }/*else if(gcode->has_letter('Z')) {
             // probe in the Z axis
             probe_XYZ(gcode, Z_AXIS);
 
@@ -361,8 +363,17 @@ void ZProbe::on_gcode_received(void *argument)
             // probe in the A axis
             probe_XYZ(gcode, A_AXIS);
 
+        }*/
+        else if(gcode->has_letter('B') && gcode->has_letter('Z')) {
+            // probe in the B axis and Z axis
+            probe_XYZ(gcode, B_AXIS);
+
+        }else if(gcode->has_letter('C') && gcode->has_letter('A')) {
+            // probe in the C axis and A Axis
+            probe_XYZ(gcode, C_AXIS);
+
         }else{
-            gcode->stream->printf("error:at least one of X Y Z or A must be specified\n");
+            gcode->stream->printf("error:at least one of X Y ZB or AC must be specified\n");
         }
 
         return;
@@ -420,10 +431,12 @@ void ZProbe::probe_XYZ(Gcode *gcode, int axis)
 
     // do a regular move which will stop as soon as the probe is triggered, or the distance is reached
     switch(axis) {
-        case X_AXIS: coordinated_move(gcode->get_value('X'), 0, 0, 0, rate, true); break;
-        case Y_AXIS: coordinated_move(0, gcode->get_value('Y'), 0, 0, rate, true); break;
-        case Z_AXIS: coordinated_move(0, 0, gcode->get_value('Z'), 0, rate, true); break;
-        case A_AXIS: coordinated_move(0, 0, 0, gcode->get_value('A'), rate, true); break;
+        case X_AXIS: coordinated_move(gcode->get_value('X'), 0, 0, 0, 0, 0, rate, true); break;
+        case Y_AXIS: coordinated_move(0, gcode->get_value('Y'), 0, 0, 0, 0, rate, true); break;
+        //case Z_AXIS: coordinated_move(0, 0, gcode->get_value('Z'), 0, 0, 0, rate, true); break;
+        //case A_AXIS: coordinated_move(0, 0, 0, gcode->get_value('A'), 0, 0, rate, true); break;
+        case B_AXIS: coordinated_move(0, 0, gcode->get_value('Z'), 0, gcode->get_value('B'), 0, rate, true); break;
+        case C_AXIS: coordinated_move(0, 0, 0, 0, gcode->get_value('A'),gcode->get_value('C'), rate, true); break;
     }
 
     // coordinated_move returns when the move is finished
@@ -435,13 +448,13 @@ void ZProbe::probe_XYZ(Gcode *gcode, int axis)
     // if the probe stopped the move we need to correct the last_milestone as it did not reach where it thought
     // this also sets last_milestone to the machine coordinates it stopped at
     THEROBOT->reset_position_from_current_actuator_position();
-    float pos[3];
-    THEROBOT->get_axis_position(pos, 3);
-
+    float pos[6];
+    THEROBOT->get_axis_position(pos, 6);
+    // unsigned integer that can be a 1 or a 0 for probe_detected
     uint8_t probeok= this->probe_detected ? 1 : 0;
 
     // print results using the GRBL format
-    gcode->stream->printf("[PRB:%1.3f,%1.3f,%1.3f:%d]\n", pos[X_AXIS], pos[Y_AXIS], pos[Z_AXIS], probeok);
+    gcode->stream->printf("[PRB:%1.3f,%1.3f,%1.3f,%1.3f,%1.3f,%1.3f:%d]\n", pos[X_AXIS], pos[Y_AXIS], pos[Z_AXIS], pos[A_AXIS], pos[B_AXIS], pos[C_AXIS], probeok);
     THEROBOT->set_last_probe_position(std::make_tuple(pos[X_AXIS], pos[Y_AXIS], pos[Z_AXIS], probeok));
 
     if(probeok == 0 && gcode->subcode == 2) {
@@ -474,7 +487,6 @@ void ZProbe::coordinated_move(float x, float y, float z, float feedrate, bool re
         size_t n= strlen(cmd);
         snprintf(&cmd[n], CMDLEN-n, " Z%1.3f", z);
     }
-
     {
         size_t n= strlen(cmd);
         // use specified feedrate (mm/sec)
@@ -497,8 +509,8 @@ void ZProbe::coordinated_move(float x, float y, float z, float feedrate, bool re
     THEROBOT->pop_state();
 
 }
-
-void ZProbe::coordinated_move(float x, float y, float z, float a, float feedrate, bool relative)
+// This must be for G38.2 G code
+void ZProbe::coordinated_move(float x, float y, float z, float a, float b, float c, float feedrate, bool relative)
 {
     #define CMDLEN 128
     char *cmd= new char[CMDLEN]; // use heap here to reduce stack usage
@@ -522,7 +534,14 @@ void ZProbe::coordinated_move(float x, float y, float z, float a, float feedrate
         size_t n= strlen(cmd);
         snprintf(&cmd[n], CMDLEN-n, " A%1.3f", a);
     }
-
+    if(!isnan(b)) {
+        size_t n= strlen(cmd);
+        snprintf(&cmd[n], CMDLEN-n, " B%1.3f", b);
+    }
+    if(!isnan(c)) {
+        size_t n= strlen(cmd);
+        snprintf(&cmd[n], CMDLEN-n, " C%1.3f", c);
+    }
     {
         size_t n= strlen(cmd);
         // use specified feedrate (mm/sec)
@@ -531,7 +550,7 @@ void ZProbe::coordinated_move(float x, float y, float z, float a, float feedrate
 
     if(relative) strcat(cmd, " G90");
 
-    //THEKERNEL->streams->printf("DEBUG: move: %s: %u\n", cmd, strlen(cmd));
+    THEKERNEL->streams->printf("DEBUG: move: %s: %u\n", cmd, strlen(cmd));
 
     // send as a command line as may have multiple G codes in it
     THEROBOT->push_state();
