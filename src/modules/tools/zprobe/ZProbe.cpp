@@ -350,11 +350,10 @@ void ZProbe::on_gcode_received(void *argument)
         if(gcode->has_letter('X')) {
             // probe in the X axis
             probe_XYZ(gcode, X_AXIS);
-
-        }else if(gcode->has_letter('Y')) {
+        }
+        else if(gcode->has_letter('Y')) {
             // probe in the Y axis
-            //probe_XYZ(gcode, Y_AXIS);
-
+            probe_XYZ(gcode, Y_AXIS);
         }/*else if(gcode->has_letter('Z')) {
             // probe in the Z axis
             probe_XYZ(gcode, Z_AXIS);
@@ -362,20 +361,18 @@ void ZProbe::on_gcode_received(void *argument)
         }else if(gcode->has_letter('A')) {
             // probe in the A axis
             probe_XYZ(gcode, A_AXIS);
-
         }*/
         else if(gcode->has_letter('B') && gcode->has_letter('Z')) {
             // probe in the B axis and Z axis
             probe_XYZ(gcode, B_AXIS);
-
-        }else if(gcode->has_letter('C') && gcode->has_letter('A')) {
+        }
+        else if(gcode->has_letter('C') && gcode->has_letter('A')) {
             // probe in the C axis and A Axis
             probe_XYZ(gcode, C_AXIS);
-
-        }else{
+        }
+        else{
             gcode->stream->printf("error:at least one of X Y ZB or AC must be specified\n");
         }
-
         return;
 
     } else if(gcode->has_m) {
@@ -436,7 +433,7 @@ void ZProbe::probe_XYZ(Gcode *gcode, int axis)
         //case Z_AXIS: coordinated_move(0, 0, gcode->get_value('Z'), 0, 0, 0, rate, true); break;
         //case A_AXIS: coordinated_move(0, 0, 0, gcode->get_value('A'), 0, 0, rate, true); break;
         case B_AXIS: coordinated_move(0, 0, gcode->get_value('Z'), 0, gcode->get_value('B'), 0, rate, true); break;
-        case C_AXIS: coordinated_move(0, 0, 0, 0, gcode->get_value('A'),gcode->get_value('C'), rate, true); break;
+        case C_AXIS: coordinated_move(0, 0, 0, gcode->get_value('A'), 0, gcode->get_value('C'), rate, true); break;
     }
 
     // coordinated_move returns when the move is finished
@@ -550,7 +547,7 @@ void ZProbe::coordinated_move(float x, float y, float z, float a, float b, float
 
     if(relative) strcat(cmd, " G90");
 
-    THEKERNEL->streams->printf("DEBUG: move: %s: %u\n", cmd, strlen(cmd));
+    //THEKERNEL->streams->printf("DEBUG: move: %s: %u\n", cmd, strlen(cmd));
 
     // send as a command line as may have multiple G codes in it
     THEROBOT->push_state();
